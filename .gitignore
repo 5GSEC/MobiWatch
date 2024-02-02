@@ -1,13 +1,8 @@
-# Ignore compiled Python bytecode files
-*.pyc
-
-# Ignore Python cache directories
-__pycache__/
-
-# Ignore environment-specific settings
-.env
-
-# Ignore editor-specific files
-.vscode/
+deepwatch/preprocessing/data/
+.DS_Store
 .idea/
-*.sublime-*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
