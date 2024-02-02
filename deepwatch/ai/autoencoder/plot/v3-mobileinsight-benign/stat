@@ -1,0 +1,31 @@
+wen.423@cse-dnc215946d:~/Desktop/5g/5g-ai/ai$ ./test.py 
+0.05943857
+(16, 841)
+5g-spector abnormal v3
+4 12
+Acc: 0.750000
+wen.423@cse-dnc215946d:~/Desktop/5g/5g-ai/ai$ ./test.py 
+0.05943857
+(117, 841)
+phoenix abnormal v3
+16 101
+Acc: 0.863248
+wen.423@cse-dnc215946d:~/Desktop/5g/5g-ai/ai$ ./test.py 
+0.05943857
+(1477, 841)
+mobileinsight benign v3
+1356 121
+Acc: 0.918077
+wen.423@cse-dnc215946d:~/Desktop/5g/5g-ai/ai$ ./test.py 
+0.05943857
+(441, 841)
+mobileinsight-benign benign v3
+439 2
+Acc: 0.995465
+
+wen.423@cse-dnc215946d:~/Desktop/5g/5g-ai/ai$ ./test.py 
+0.05943857
+(1036, 841)
+mobileinsight-abnormal abnormal v3
+917 119
+Acc: 0.114865

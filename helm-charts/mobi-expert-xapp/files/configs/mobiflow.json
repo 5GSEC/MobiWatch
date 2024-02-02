@@ -1,0 +1,6 @@
+{
+  "mobiflow": {
+    "sqlite3_db_path": "/etc/mobiflow/mobiflow.db",
+    "rpc_query_interval": 500
+  }
+}

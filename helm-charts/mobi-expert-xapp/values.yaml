@@ -1,0 +1,48 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: localhost:5000/deep-watch-rapp
+  tag: latest
+  pullPolicy: Always
+  pullSecrets: []
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "deep-watch-rapp"
+
+enable-prometheus: false
+
+config:
+  servicePath: "/etc/onos/config"
+  configPath: "/etc/fb/config"
+  mobiflowPath: "/etc/mobiflow/config"
+  ric:
+    e2tEndpoint: "onos-e2t:5150"
+    topoEndpoint: "onos-topo:5150"
+  mobiflow:
+    sqlite3_db_path: "/etc/mobiflow/"
+    mongo_db_port: 27017
+    rpc_port: 50051
+    rpc_addr: "mobiflow-auditor.riab.svc.cluster.local" # service discovery
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+
+tolerations: []
+
+affinity: {}
