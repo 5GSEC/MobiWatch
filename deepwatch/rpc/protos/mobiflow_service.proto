@@ -3,8 +3,8 @@
 // Version v0.0.1
 // Install instructions below
 // pip3 install grpcio grpcio-tools
-// cd deep-watch-rapp (make sure it is with main.py)
-// python3 -m grpc_tools.protoc --proto_path=. --python_out=. --pyi_out=. --grpc_python_out=. pypbest/rpc/protos/mobiflow_service.proto
+// cd deepwatch (make sure it is with main.py)
+// python3 -m grpc_tools.protoc --proto_path=. --python_out=. --pyi_out=. --grpc_python_out=. rpc/protos/mobiflow_service.proto
 
 // Syntax definition
 syntax = "proto3";

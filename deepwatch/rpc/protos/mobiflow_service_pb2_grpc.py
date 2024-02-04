@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from pypbest.rpc.protos import mobiflow_service_pb2 as pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2
+from rpc.protos import mobiflow_service_pb2 as rpc_dot_protos_dot_mobiflow__service__pb2
 
 
 class MobiFlowQueryStub(object):
@@ -17,8 +17,8 @@ class MobiFlowQueryStub(object):
         """
         self.MobiFlowStream = channel.unary_stream(
                 '/MobiFlowQuery/MobiFlowStream',
-                request_serializer=pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.SerializeToString,
-                response_deserializer=pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.FromString,
+                request_serializer=rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.SerializeToString,
+                response_deserializer=rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.FromString,
                 )
 
 
@@ -37,8 +37,8 @@ def add_MobiFlowQueryServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'MobiFlowStream': grpc.unary_stream_rpc_method_handler(
                     servicer.MobiFlowStream,
-                    request_deserializer=pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.FromString,
-                    response_serializer=pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.SerializeToString,
+                    request_deserializer=rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.FromString,
+                    response_serializer=rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -63,7 +63,7 @@ class MobiFlowQuery(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/MobiFlowQuery/MobiFlowStream',
-            pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.SerializeToString,
-            pypbest_dot_rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.FromString,
+            rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamRequest.SerializeToString,
+            rpc_dot_protos_dot_mobiflow__service__pb2.MobiFlowStreamResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
