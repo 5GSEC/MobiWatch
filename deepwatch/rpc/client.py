@@ -7,7 +7,7 @@ class MobiFlowRpcClient:
     def __init__(self, rpc_ip, rpc_port):
         self.rpc_ip = rpc_ip
         self.rpc_port = rpc_port
-        self.request_initiator = "MobiExpert"
+        self.request_initiator = "DeepWatch"
 
     def check_server(self):
         if self.rpc_ip is None or self.rpc_ip == "":
@@ -31,4 +31,5 @@ class MobiFlowRpcClient:
         except grpc.RpcError as e:
             logging.info(f"[MobiFlowRpcClient] RPC error: {str(e)}")
             return []
+
 

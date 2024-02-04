@@ -2,9 +2,9 @@ import logging
 import threading
 import datetime
 import time
-from .mobiflow.lockutil import *
-from .mobiflow.mobiflow import get_time_ms, MOBIFLOW_DELIMITER
-from .rpc.client import MobiFlowRpcClient
+from mobiflow.lockutil import *
+from mobiflow.mobiflow import get_time_ms, MOBIFLOW_DELIMITER
+from rpc.client import MobiFlowRpcClient
 
 class MobiFlowReader:
     def __init__(self, rpc_ip_addr, rpc_port, query_interval, maintenance_time_threshold=0):

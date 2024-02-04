@@ -8,7 +8,7 @@
 import argparse
 import json
 import logging
-from .mobiflow_reader import MobiFlowReader
+from mobiflow_reader import MobiFlowReader
 
 mf_reader = None
 pb = None
@@ -39,5 +39,6 @@ if __name__ == "__main__":
     parser.add_argument("--rpc-port", type=int, help="RPC server port for reaching MobiFlow Service")
     args = parser.parse_args()
     main(args)
+
 
 
