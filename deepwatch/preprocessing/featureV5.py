@@ -1,13 +1,13 @@
-from common import *
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, LabelEncoder
 from sklearn.compose import ColumnTransformer
-from encoding import *
+from .common import *
+from .encoding import *
 import math
 import more_itertools
 
 # Version 5, treat it as uni-variate time series data, use msg sequence only
 class FeatureV5:
-    def __init__(self, rat="5G") -> None:
+    def __init__(self, rat="5G", window_size=5) -> None:
     
         self.mobiflow_meta_str = "msg_type;msg_id;ts;ver;gen;bs_id;rnti;tmsi;imsi;imei;cipher_alg;int_alg;est_cause;msg;rrc_state;nas_state;sec_state;emm_cause;rrc_init_timer;rrc_inactive_timer;nas_initial_timer;nas_inactive_timer"
         self.delimeter = ";"
@@ -30,7 +30,7 @@ class FeatureV5:
             self.selected_feature_idx.append(self.get_mobiflow_index(f))
 
         # time series parameters
-        self.window_size = 5
+        self.window_size = window_size
 
         self.x = []
         self.y = []
@@ -110,5 +110,5 @@ class FeatureV5:
 
         self.labels = self.labels + ([label] * len(x))
 
-        print(len(self.x))
+        # print(len(self.x))
 

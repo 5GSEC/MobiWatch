@@ -19,6 +19,9 @@ class MobiFlowReader:
         logging.info("[App] Starting MobiFlow reading thread")
         self.db_thread = threading.Thread(target=self.read_mobiflow_rpc)
         self.db_thread.start()
+        # mobiflow storage
+        self.bs_mf = []
+        self.ue_mf = []
 
     def read_mobiflow_rpc(self):
         if self.rpc_client is None:
@@ -53,13 +56,15 @@ class MobiFlowReader:
 
                 if write_decision == "UE":
                     umf = ue_results[u_idx]
-                    logging.info("[MobiFlow] Writing UE MobiFlow: " + umf)
-                    # TODO DO STH... Store MobiFlow
+                    logging.info("[MobiFlow] Storing UE MobiFlow: " + umf)
+                    # Store MobiFlow
+                    self.ue_mf.append(umf)
                     u_idx += 1
                 elif write_decision == "BS":
                     bmf = bs_results[b_idx]
-                    logging.info("[MobiFlow] Writing BS MobiFlow: " + bmf)
-                    # TODO DO STH... Store MobiFlow
+                    logging.info("[MobiFlow] Storing BS MobiFlow: " + bmf)
+                    # Store MobiFlow
+                    self.bs_mf.append(bmf)
                     b_idx += 1
 
             time.sleep(self.rpc_query_interval / 1000)

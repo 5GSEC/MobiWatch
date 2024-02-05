@@ -38,6 +38,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - "deepwatch/main.py"
+            - "--config-path={{ .Values.config.servicePath }}/config.json"
             - "--mobiflow-config={{ .Values.config.servicePath }}/mobiflow.json"
             - "--rpc-addr={{ .Values.config.mobiflow.rpc_addr }}"
             - "--rpc-port={{ .Values.config.mobiflow.rpc_port }}"
