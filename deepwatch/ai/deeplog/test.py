@@ -9,7 +9,7 @@ from train import train_dataset, train_label, train_ver, normalize, window_size
 from deeplog import train_deeplog, test_deeplog
 
 # train data
-train_dataset = "mobileinsight"
+train_dataset = "5g-colosseum"
 train_label = "benign"
 train_ver = "v5"
 
@@ -17,7 +17,7 @@ model = torch.load(f'save/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.
 print(model)
 
 # test data
-test_dataset = "5g-spector"
+test_dataset = "5g-colosseum"
 test_label = "abnormal"
 test_ver = "v5"
 

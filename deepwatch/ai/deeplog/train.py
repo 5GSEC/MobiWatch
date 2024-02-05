@@ -8,7 +8,7 @@ from utils import validate_by_rmse, Normalizer
 import sys
 
 # training dataset
-train_dataset = "mobileinsight"
+train_dataset = "5g-colosseum"
 train_label = "benign"
 train_ver = "v5"
 window_size = 5

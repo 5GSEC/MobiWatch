@@ -33,7 +33,7 @@ def main(args: argparse.Namespace) -> None:
             num_candidates = int(general_config["deeplog_param"]["num_candidates"])
             window_size = int(general_config["deeplog_param"]["window_size"])
     else:
-        num_candidates = 1
+        num_candidates = 2
         window_size = 5
 
     # Init mobiflow writer configs
@@ -41,17 +41,9 @@ def main(args: argparse.Namespace) -> None:
     mf_reader = MobiFlowReader(rpc_ip, rpc_port, rpc_query_interval)
 
     # begin test code
-    # mf_reader.ue_mf.append("UE;0;1700502310.172734000;v2.0;SECSM;0;12927;0;0;0;0;0;3;RRCSetupRequest;0;0;0;0;0;0;0;0")
-    # mf_reader.ue_mf.append("UE;1;1700502310.174590000;v2.0;SECSM;0;12927;0;0;0;0;0;3;RRCSetup;2;0;0;0;1700502310.174590000;0;0;0")
-    # mf_reader.ue_mf.append("UE;2;1700502310.267372000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;RRCSetupComplete;2;0;0;0;1700502310.174590000;0;0;0")
-    # mf_reader.ue_mf.append("UE;3;1700502310.267372000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Registrationrequest;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;4;1700502310.285077000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Authenticationrequest;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;5;1700502310.330620000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Authenticationrequest;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;6;1700502310.361322000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Authenticationresponse;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;7;1700502310.362573000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Securitymodecommand;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;8;1700502310.409600000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Securitymodecommand;2;1;0;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;9;1700502310.431859000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Securitymodecomplete;2;1;1;0;1700502310.174590000;0;1700502310.267372000;0")
-    # mf_reader.ue_mf.append("UE;10;1700502310.431859000;v2.0;SECSM;0;12927;0;2089900007487;0;0;0;3;Identityrequest;2;1;1;0;1700502310.174590000;0;1700502310.267372000;0")
+    # with open("example.mobiflow", "r") as f:
+    #     for line in f.readlines():
+    #         mf_reader.ue_mf.append(line.strip())
     # end test code
 
     # Loop prediction for incoming data

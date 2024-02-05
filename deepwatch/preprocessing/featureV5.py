@@ -89,7 +89,7 @@ class FeatureV5:
         if len(data_before_encode) <= 0:
             return
         
-        data_before_encode.append(len(self.keys)-1) # append a new msg to the end to indicate the end
+        # data_before_encode.append(len(self.keys)-1) # append a new msg to the end to indicate the end
         data_before_encode = np.array(data_before_encode)
          
         # one-hot encoding

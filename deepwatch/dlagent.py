@@ -6,10 +6,22 @@ sys.path.append("./ai/deeplog")
 
 from abc import ABC, abstractmethod
 
+from log_formatter import LogFormatter
 from preprocessing.featureV5 import FeatureV5
 from ai.deeplog.deeplog import LSTM_onehot
 
 class DLAgent(ABC):
+
+    def __init__(self):
+        # create console handler with a higher log level
+        self.logger = logging.getLogger("DeepWatch")
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.propagate = False # avoid double printing
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(LogFormatter())
+        self.logger.addHandler(ch)
+
     @abstractmethod
     def predict(self, input_data):
         pass
@@ -21,6 +33,7 @@ class DLAgent(ABC):
 
 class DeepLogAgent(DLAgent):
     def __init__(self, window_size=5, num_candidates=1):
+        super().__init__()
         self.train_dataset = "5g-colosseum"
         self.train_label = "benign"
         self.train_ver = "v5"
@@ -60,8 +73,8 @@ class DeepLogAgent(DLAgent):
         keys_actual = self.key_dict[actual]
         if keys_actual in keys_predicted:
             # Expected, benign outcome
-            logging.info(f"{keys_seq} => {keys_actual} within prediction {keys_predicted}")
+            self.logger.info(f"{keys_seq} => {keys_actual} within prediction {keys_predicted}")
         else:
             # Unexpected, malicious outcome   
-            logging.error(f"{keys_seq} => {keys_actual} out of prediction {keys_predicted}") 
+            self.logger.error(f"{keys_seq} => {keys_actual} out of prediction {keys_predicted}") 
 
