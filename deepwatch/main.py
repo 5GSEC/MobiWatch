@@ -8,6 +8,7 @@
 import argparse
 import json
 import logging
+from time import sleep
 from mobiflow_reader import MobiFlowReader
 from dlagent import DeepLogAgent
 
@@ -55,18 +56,21 @@ def main(args: argparse.Namespace) -> None:
 
     # Loop prediction for incoming data
     deeplog = DeepLogAgent(num_candidates=num_candidates, window_size=window_size)
-    last_ue_mf_index = -1
+    last_ue_mf_index = 0
     prediction_interval = rpc_query_interval
 
-    while last_ue_mf_index < len(mf_reader.ue_mf):
+    while True:
         # obtain a trace list of MobiFlow and predict
-        input_seq = mf_reader.ue_mf[last_ue_mf_index+1: len(mf_reader.ue_mf)]
-        last_ue_mf_index = len(mf_reader.ue_mf)-1
-        seqs, labels = deeplog.seq_gen(input_seq)
-        for i in range(len(seqs)):
-            predicted = deeplog.predict(seqs[i])
-            deeplog.interpret(seqs[i], predicted, labels[i])
-        sleep(prediction_interval / 1000)
+        ue_mf_len = len(mf_reader.ue_mf)
+        if last_ue_mf_index < ue_mf_len:
+            input_seq = mf_reader.ue_mf[last_ue_mf_index: ue_mf_len]
+            last_ue_mf_index = len(mf_reader.ue_mf)-1
+            seqs, labels = deeplog.seq_gen(input_seq)
+            for i in range(len(seqs)):
+                predicted = deeplog.predict(seqs[i])
+                deeplog.interpret(seqs[i], predicted, labels[i])
+
+        sleep(prediction_interval / 1000)        
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -82,6 +86,7 @@ if __name__ == "__main__":
     parser.add_argument("--rpc-port", type=int, help="RPC server port for reaching MobiFlow Service")
     args = parser.parse_args()
     main(args)
+
 
 
 

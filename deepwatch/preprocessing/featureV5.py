@@ -21,7 +21,7 @@ class FeatureV5:
         else:
             raise NotImplementedError
         self.keys = [value for d in list_dicts for value in d.values()]
-        self.keys.append("NULL") # append a new msg to the end to indicate the end
+        #self.keys.append("NULL") # append a new msg to the end to indicate the end
         self.keylen = self.keys.__len__()
 
         self.selected_feature = ["msg"]
