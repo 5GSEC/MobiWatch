@@ -52,7 +52,7 @@ def main(args: argparse.Namespace) -> None:
 
     while True:
         # obtain a trace list of UE MobiFlow and predict
-        umf, rnti = mf_reader.get_next_ue_mobiflow()
+        umf, rnti = mf_reader.get_next_ue_mobiflow(threshold=window_size)
         if umf is not None:
             logging.info("")
             logging.info("============== Begin Analyzing UE RNTI %s ==============" % ("{:04x}".format(rnti)))

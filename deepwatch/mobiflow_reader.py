@@ -92,10 +92,12 @@ class MobiFlowReader:
             self.ue_mf_current_index[rnti] = 0
 
     # loop through each UE to return the mobiflow that are not analyzed
-    def get_next_ue_mobiflow(self):
+    def get_next_ue_mobiflow(self, threshold=0):
         rnti_keys = self.ue_mf.keys()
         for rnti in rnti_keys:
             ue_mf_len = len(self.ue_mf[rnti])
+            if ue_mf_len <= threshold:
+                continue # skip if under threshold
             cur_index = self.ue_mf_current_index[rnti]
             if cur_index < ue_mf_len:
                 res = self.ue_mf[rnti][cur_index: ue_mf_len]
@@ -104,10 +106,12 @@ class MobiFlowReader:
         return None, None
 
     # loop through each BS to return the mobiflow that are not analyzed
-    def get_next_bs_mobiflow(self):
+    def get_next_bs_mobiflow(self, threshold=0):
         bs_id_keys = self.bs_mf.keys()
         for bs_id in bs_id_keys:
             bs_mf_len = len(self.bs_mf[bs_id])
+            if bs_mf_len <= threshold:
+                continue # skip if under threshold
             cur_index = self.bs_mf_current_index[bs_id]
             if cur_index < bs_mf_len:
                 res = self.bs_mf[bs_id][cur_index: bs_mf_len]
