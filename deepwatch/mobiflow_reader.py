@@ -59,13 +59,13 @@ class MobiFlowReader:
 
                 if write_decision == "UE":
                     umf = ue_results[u_idx]
-                    logging.info("[MobiFlow] Storing UE MobiFlow: " + umf)
+                    # logging.info("[MobiFlow] Storing UE MobiFlow: " + umf)
                     # Store MobiFlow
                     self.add_ue_mobiflow(umf)
                     u_idx += 1
                 elif write_decision == "BS":
                     bmf = bs_results[b_idx]
-                    logging.info("[MobiFlow] Storing BS MobiFlow: " + bmf)
+                    # logging.info("[MobiFlow] Storing BS MobiFlow: " + bmf)
                     # Store MobiFlow
                     self.add_bs_mobiflow(bmf)
                     b_idx += 1
@@ -80,7 +80,7 @@ class MobiFlowReader:
             self.bs_mf[bs_id].append(bmf)
         else:
             self.bs_mf[bs_id] = [bmf]
-            self.bs_mf_current_index[bs_id] = 0
+            self.bs_mf_current_index[bs_id] = -1
 
     # add UE mobiflow to corresponding dict
     def add_ue_mobiflow(self, umf: str):
@@ -89,32 +89,42 @@ class MobiFlowReader:
             self.ue_mf[rnti].append(umf)
         else:
             self.ue_mf[rnti] = [umf]
-            self.ue_mf_current_index[rnti] = 0
+            self.ue_mf_current_index[rnti] = -1
 
     # loop through each UE to return the mobiflow that are not analyzed
-    def get_next_ue_mobiflow(self, threshold=0):
+    def get_next_ue_mobiflow_seq(self, threshold=0):
         rnti_keys = self.ue_mf.keys()
         for rnti in rnti_keys:
             ue_mf_len = len(self.ue_mf[rnti])
+            cur_index = self.ue_mf_current_index[rnti]                
             if ue_mf_len <= threshold:
-                continue # skip if under threshold
-            cur_index = self.ue_mf_current_index[rnti]
+                # skip if under threshold
+                continue
+            if cur_index < threshold:
+                # update cur_index to threshold
+                self.ue_mf_current_index[rnti] = threshold
+                cur_index = self.ue_mf_current_index[rnti]
             if cur_index < ue_mf_len:
-                res = self.ue_mf[rnti][cur_index: ue_mf_len]
+                res = self.ue_mf[rnti][cur_index-threshold: ue_mf_len]
                 self.ue_mf_current_index[rnti] = ue_mf_len
                 return res, rnti
         return None, None
 
     # loop through each BS to return the mobiflow that are not analyzed
-    def get_next_bs_mobiflow(self, threshold=0):
+    def get_next_bs_mobiflow_seq(self, threshold=0):
         bs_id_keys = self.bs_mf.keys()
         for bs_id in bs_id_keys:
             bs_mf_len = len(self.bs_mf[bs_id])
-            if bs_mf_len <= threshold:
-                continue # skip if under threshold
             cur_index = self.bs_mf_current_index[bs_id]
+            if bs_mf_len <= threshold:
+                # skip if under threshold
+                continue
+            if cur_index < threshold:
+                # update cur_index to threshold
+                self.bs_mf_current_index[bs_id] = threshold
+                cur_index = self.bs_mf_current_index[bs_id]
             if cur_index < bs_mf_len:
-                res = self.bs_mf[bs_id][cur_index: bs_mf_len]
+                res = self.bs_mf[bs_id][cur_index-threshold: bs_mf_len]
                 self.bs_mf_current_index[bs_id] = bs_mf_len
                 return res, bs_id
         return None, None
@@ -122,4 +132,5 @@ class MobiFlowReader:
     @staticmethod
     def timestamp2str(ts):
         return datetime.datetime.fromtimestamp(ts/1000).__str__() # convert ms into s
+
 
