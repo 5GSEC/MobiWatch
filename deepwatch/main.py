@@ -43,24 +43,25 @@ def main(args: argparse.Namespace) -> None:
     # begin test code
     # with open("example.mobiflow", "r") as f:
     #     for line in f.readlines():
-    #         mf_reader.ue_mf.append(line.strip())
+    #         mf_reader.add_ue_mobiflow(line.strip())
     # end test code
 
     # Loop prediction for incoming data
     deeplog = DeepLogAgent(num_candidates=num_candidates, window_size=window_size)
-    last_ue_mf_index = 0
     prediction_interval = rpc_query_interval
 
     while True:
-        # obtain a trace list of MobiFlow and predict
-        ue_mf_len = len(mf_reader.ue_mf)
-        if last_ue_mf_index < ue_mf_len:
-            input_seq = mf_reader.ue_mf[last_ue_mf_index: ue_mf_len]
-            last_ue_mf_index = len(mf_reader.ue_mf)-1
-            seqs, labels = deeplog.seq_gen(input_seq)
+        # obtain a trace list of UE MobiFlow and predict
+        umf, rnti = mf_reader.get_next_ue_mobiflow()
+        if umf is not None:
+            logging.info("")
+            logging.info("============== Begin Analyzing UE RNTI %s ==============" % ("{:04x}".format(rnti)))
+            seqs, labels = deeplog.seq_gen(umf)
             for i in range(len(seqs)):
                 predicted = deeplog.predict(seqs[i])
                 deeplog.interpret(seqs[i], predicted, labels[i])
+            logging.info("============== End Analyzing UE RNTI %s ==============" % ("{:04x}".format(rnti)))
+            logging.info("")
 
         sleep(prediction_interval / 1000)        
 

@@ -20,8 +20,11 @@ class MobiFlowReader:
         self.db_thread = threading.Thread(target=self.read_mobiflow_rpc)
         self.db_thread.start()
         # mobiflow storage
-        self.bs_mf = []
-        self.ue_mf = []
+        self.bs_mf = {}
+        self.ue_mf = {}
+        # use dict to track mobiflow entries that have been analyzed
+        self.ue_mf_current_index = {}
+        self.bs_mf_current_index = {}
 
     def read_mobiflow_rpc(self):
         if self.rpc_client is None:
@@ -58,17 +61,59 @@ class MobiFlowReader:
                     umf = ue_results[u_idx]
                     logging.info("[MobiFlow] Storing UE MobiFlow: " + umf)
                     # Store MobiFlow
-                    self.ue_mf.append(umf)
+                    self.add_ue_mobiflow(umf)
                     u_idx += 1
                 elif write_decision == "BS":
                     bmf = bs_results[b_idx]
                     logging.info("[MobiFlow] Storing BS MobiFlow: " + bmf)
                     # Store MobiFlow
-                    self.bs_mf.append(bmf)
+                    self.add_bs_mobiflow(bmf)
                     b_idx += 1
 
             time.sleep(self.rpc_query_interval / 1000)
         f.close()
+
+    # add BS mobiflow to corresponding dict
+    def add_bs_mobiflow(self, bmf: str):
+        bs_id = int(bmf.split(MOBIFLOW_DELIMITER)[5])
+        if bs_id in self.bs_mf.keys():
+            self.bs_mf[bs_id].append(bmf)
+        else:
+            self.bs_mf[bs_id] = [bmf]
+            self.bs_mf_current_index[bs_id] = 0
+
+    # add UE mobiflow to corresponding dict
+    def add_ue_mobiflow(self, umf: str):
+        rnti = int(umf.split(MOBIFLOW_DELIMITER)[6])
+        if rnti in self.ue_mf.keys():
+            self.ue_mf[rnti].append(umf)
+        else:
+            self.ue_mf[rnti] = [umf]
+            self.ue_mf_current_index[rnti] = 0
+
+    # loop through each UE to return the mobiflow that are not analyzed
+    def get_next_ue_mobiflow(self):
+        rnti_keys = self.ue_mf.keys()
+        for rnti in rnti_keys:
+            ue_mf_len = len(self.ue_mf[rnti])
+            cur_index = self.ue_mf_current_index[rnti]
+            if cur_index < ue_mf_len:
+                res = self.ue_mf[rnti][cur_index: ue_mf_len]
+                self.ue_mf_current_index[rnti] = ue_mf_len
+                return res, rnti
+        return None, None
+
+    # loop through each BS to return the mobiflow that are not analyzed
+    def get_next_bs_mobiflow(self):
+        bs_id_keys = self.bs_mf.keys()
+        for bs_id in bs_id_keys:
+            bs_mf_len = len(self.bs_mf[bs_id])
+            cur_index = self.bs_mf_current_index[bs_id]
+            if cur_index < bs_mf_len:
+                res = self.bs_mf[bs_id][cur_index: bs_mf_len]
+                self.bs_mf_current_index[bs_id] = bs_mf_len
+                return res, bs_id
+        return None, None
 
     @staticmethod
     def timestamp2str(ts):
