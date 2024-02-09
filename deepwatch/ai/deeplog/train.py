@@ -8,7 +8,7 @@ from utils import validate_by_rmse, Normalizer
 import sys
 
 # training dataset
-train_dataset = "5g-colosseum"
+train_dataset = "5g-select"
 train_label = "benign"
 train_ver = "v5"
 window_size = 5
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # train_normal_label = train_normal_label[:end_index]
 
 
-    if train_dataset.__contains__("5g-colosseum"):
+    if "5g-colosseum" in train_dataset or "5g-select" in train_dataset:
         rat = "5G"
     else:
         rat = "LTE"

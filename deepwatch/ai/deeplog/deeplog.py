@@ -17,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # window_size = 10 # Fixed for this demo 
 num_layers = 2 
 hidden_size = 64 # 32
-num_epochs = 300
+num_epochs = 500
 batch_size = 128 # 2048
 num_candidates = 2 # top candidates
 

@@ -34,7 +34,7 @@ class DLAgent(ABC):
 class DeepLogAgent(DLAgent):
     def __init__(self, window_size=5, num_candidates=1):
         super().__init__()
-        self.train_dataset = "5g-colosseum"
+        self.train_dataset = "5g-select"
         self.train_label = "benign"
         self.train_ver = "v5"
         self.rat = "5G"

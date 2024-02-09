@@ -9,7 +9,7 @@ from train import train_dataset, train_label, train_ver, normalize, window_size
 from deeplog import train_deeplog, test_deeplog
 
 # train data
-train_dataset = "5g-colosseum"
+train_dataset = "5g-select"
 train_label = "benign"
 train_ver = "v5"
 
@@ -24,7 +24,7 @@ test_ver = "v5"
 sys.path.append('../../preprocessing/')
 from featureV5 import FeatureV5
 
-if train_dataset.__contains__("5g-colosseum"):
+if "5g-colosseum" in train_dataset or "5g-select" in train_dataset:
     rat = "5G"
 else:
     rat = "LTE"

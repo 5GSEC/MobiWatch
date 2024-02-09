@@ -41,9 +41,9 @@ def main(args: argparse.Namespace) -> None:
     mf_reader = MobiFlowReader(rpc_ip, rpc_port, rpc_query_interval)
 
     # begin test code
-    # with open("example.mobiflow", "r") as f:
-    #     for line in f.readlines():
-    #         mf_reader.add_ue_mobiflow(line.strip())
+    with open("example.mobiflow", "r") as f:
+        for line in f.readlines():
+            mf_reader.add_ue_mobiflow(line.strip())
     # end test code
 
     # Loop prediction for incoming data

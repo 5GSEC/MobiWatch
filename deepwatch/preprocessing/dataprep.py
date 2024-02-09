@@ -18,11 +18,13 @@ class DataLoader:
         self.dataset_5g_spector = "/home/wen.423/Desktop/5g/dataset/5g-spector"
         self.dataset_mobileinsight = "/home/wen.423/Desktop/5g/mobileinsight-core/examples/jsonlogs"
         self.dataset_5g_colosseum = "/home/wen.423/Desktop/5g/5g-ai/colosseum-logs/1024-NR-5UE-10011-NORMAL/osu-seclab-oai-secsm-ran-ue-img-1021-srn59-RES139156/pcaps"
-        
+        self.dataset_5g_select = "/home/wen.423/Desktop/5g/dataset/5g-select"
+
         self.mobiflow_phoenix = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/phoenix"
         self.mobiflow_5g_spector = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-spector"
         self.mobiflow_mobileinsight = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/mobile-insight"
         self.mobiflow_5g_colosseum = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-colosseum"
+        self.mobiflow_5g_select = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-select"
 
         self.dataset_name = ""
         self.abnormal = None
@@ -55,7 +57,7 @@ class DataLoader:
         self.dataset_name = dataset_name
         self.abnormal = "abnormal" if abnormal == True else "benign"
         self.ver = ver
-        if self.dataset_name.__contains__("5g-colosseum"):
+        if "5g-colosseum" in self.dataset_name or "5g-select" in self.dataset_name:
             self.rat = "5G"
         else:
             self.rat = "LTE"
@@ -115,6 +117,14 @@ class DataLoader:
                 type = "benign"
                 forbidden_set = []
                 label = 0
+
+        elif dataset_name == "5g-select":
+            mf_folder = self.mobiflow_5g_select
+            mf_folder = os.path.join(mf_folder, "benign")
+            type = "benign"
+            forbidden_set = []
+            label = 0
+
         else:
             raise NotImplementedError
 
@@ -273,12 +283,13 @@ class DataLoader:
 
 ver = 5
 dl = DataLoader()
-dl.load_data("mobileinsight", False, ver)
-dl.load_data("mobileinsight", True, ver)
-dl.load_data("phoenix", True, ver)
-dl.load_data("5g-spector", True, ver)
-dl.load_data("5g-spector", False, ver)
-dl.load_data("mobileinsight-all", False, ver)
-dl.load_data("5g-colosseum", True, ver)
-dl.load_data("5g-colosseum", False, ver)
+# dl.load_data("mobileinsight", False, ver)
+# dl.load_data("mobileinsight", True, ver)
+# dl.load_data("phoenix", True, ver)
+# dl.load_data("5g-spector", True, ver)
+# dl.load_data("5g-spector", False, ver)
+# dl.load_data("mobileinsight-all", False, ver)
+# dl.load_data("5g-colosseum", True, ver)
+# dl.load_data("5g-colosseum", False, ver)
+dl.load_data("5g-select", False, ver)
 
