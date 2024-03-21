@@ -1,5 +1,2 @@
-#!/usr/bin/env bash
-
-docker build --tag localhost:5000/deep-watch-rapp:latest .
-docker push localhost:5000/deep-watch-rapp
-
+#!/bin/bash
+sudo docker build -t 5gsec.se-ran.org:10004/xapp/deepwatch-xapp:0.0.1 .

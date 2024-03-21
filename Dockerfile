@@ -1,30 +1,50 @@
-# SPDX-FileCopyrightText: Copyright 2004-present Facebook. All Rights Reserved.
-# SPDX-FileCopyrightText: 2019-present Open Networking Foundation <info@opennetworking.org>
+# ==================================================================================
+#   Copyright (c) 2020 Samsung Electronics Co., Ltd. All Rights Reserved.
 #
-# SPDX-License-Identifier: Apache-2.0
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#          http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+# ==================================================================================
+FROM python:3.8-alpine
 
-FROM python:3.8-slim
+# copy rmr libraries from builder image in lieu of an Alpine package
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.5 /usr/local/lib64/librmr* /usr/local/lib64/
+# RMR setup
+RUN mkdir -p /opt/route/
+COPY init/test_route.rt /opt/route/test_route.rt
+ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
+ENV RMR_SEED_RT /opt/route/test_route.rt
+# install a legacy ver of betterproto TODO: upgrade later
+RUN pip install betterproto==2.0.0b4 
 
-# install all deps
-WORKDIR /usr/local
+# sdl needs gcc
+RUN apk update && apk add gcc musl-dev bash
 
-# prepare gprpc dependencies
-RUN pip install grpcio grpcio-tools
+# Install
+COPY setup.py /tmp
+COPY README.md /tmp
+COPY LICENSE.txt /tmp/
+COPY src/ /tmp/src
+COPY init/ /tmp/init
+RUN pip install /tmp
 
-# prepare AI ML depdencies
-RUN pip install more-itertools numpy torch==2.0.1+cpu scikit-learn==1.3.2 -f https://download.pytorch.org/whl/torch_stable.html
+# Env - TODO- Configmap
+ENV PYTHONUNBUFFERED 1
+ENV CONFIG_FILE=/tmp/init/config-file.json
 
-# COPY onos_e2_sm ./onos_e2_sm
-# RUN pip install --upgrade pip ./onos_e2_sm --no-cache-dir
+# For Default DB connection, modify for resp kubernetes env
+ENV DBAAS_SERVICE_PORT=6379
+ENV DBAAS_SERVICE_HOST=service-ricplt-dbaas-tcp.ricplt.svc.cluster.local
 
-# speed up subsequent image builds by pre-dl and pre-installing pre-reqs
-COPY deepwatch/setup.py ./deepwatch/setup.py
-RUN pip install ./deepwatch --no-cache-dir
+#Run
+CMD run-xapp.py
 
-# install actual app code
-COPY deepwatch ./deepwatch
-RUN pip install ./deepwatch --no-cache-dir
 
-WORKDIR /usr/local/deepwatch
-
-ENTRYPOINT [ "python" ]
