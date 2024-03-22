@@ -21,11 +21,12 @@ from ricxappframe.xapp_frame import RMRXapp, rmr
 from .utils.constants import Constants
 from .manager import *
 from .handler import *
+from .ai.dlagent import DLAgent, DeepLogAgent
 from mdclogpy import Level
 
 class TemplateXapp:
 
-    __XAPP_CONFIG_PATH = "/tmp/init/config-file.json"
+    __XAPP_CONFIG_PATH = getenv("CONFIG_FILE", default="/tmp/init/config-file.json")
     __XAPP_NAME = "deepwatch-xapp"
     __XAPP_VERSION = "0.0.1"
     __XAPP_NAME_SPACE = "ricxapp"
@@ -52,26 +53,20 @@ class TemplateXapp:
         rmr_xapp.logger.info("HWXapp.post_init :: post_init called")
         sdl_mgr = SdlManager(rmr_xapp)
         sub_mgr = SubscriptionManager(rmr_xapp)
-        sdl_alarm_mgr = SdlAlarmManager(rmr_xapp)
-        a1_mgr = A1PolicyManager(rmr_xapp)
-        a1_mgr.startup()
-        metric_mgr = MetricManager(rmr_xapp)
-        metric_mgr.send_metric()
+        # sdl_alarm_mgr = SdlAlarmManager(rmr_xapp)
+        # a1_mgr = A1PolicyManager(rmr_xapp)
+        # a1_mgr.startup()
+        # metric_mgr = MetricManager(rmr_xapp)
+        # metric_mgr.send_metric()
 
         # register the xApp to the RIC manager
         self._register(rmr_xapp)
 
-        # obtain nodeb list for subscription
-        enb_list = sdl_mgr.get_enb_list()
-        for enb_nb_identity in enb_list:
-            inventory_name = enb_nb_identity.inventory_name
-            nodeb_info_json = sdl_mgr.get_nodeb_info_by_inventory_name(inventory_name)
+        # init DL agent
+        self.dl_agent = DeepLogAgent()
+        self.dl_agent.load_mobiflow(sdl_mgr)
+        x, y = self.dl_agent.encode_mobiflow_as_msg_seq()
 
-        gnb_list = sdl_mgr.get_gnb_list()
-        for gnb_nb_identity in gnb_list:
-            inventory_name = gnb_nb_identity.inventory_name
-            connection_status = gnb_nb_identity.connection_status
-            nodeb_info_json = sdl_mgr.get_nodeb_info_by_inventory_name(inventory_name)
 
     def _register(self, rmr_xapp):
         """

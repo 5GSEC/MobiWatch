@@ -13,20 +13,25 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-FROM python:3.8-alpine
+#Python 3.11 miniconda
+FROM continuumio/miniconda3:23.10.0-1
 
-# copy rmr libraries from builder image in lieu of an Alpine package
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.5 /usr/local/lib64/librmr* /usr/local/lib64/
 # RMR setup
 RUN mkdir -p /opt/route/
-COPY init/test_route.rt /opt/route/test_route.rt
-ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
-ENV RMR_SEED_RT /opt/route/test_route.rt
-# install a legacy ver of betterproto TODO: upgrade later
-RUN pip install betterproto==2.0.0b4 
 
-# sdl needs gcc
-RUN apk update && apk add gcc musl-dev bash
+# sdl uses hiredis which needs gcc
+RUN apt update && apt install -y gcc musl-dev
+
+# copy rmr libraries from builder image in lieu of an Alpine package
+ARG RMRVERSION=4.9.0
+RUN wget --content-disposition https://packagecloud.io/o-ran-sc/release/packages/debian/stretch/rmr_${RMRVERSION}_amd64.deb/download.deb && dpkg -i rmr_${RMRVERSION}_amd64.deb
+RUN wget --content-disposition https://packagecloud.io/o-ran-sc/release/packages/debian/stretch/rmr-dev_${RMRVERSION}_amd64.deb/download.deb && dpkg -i rmr-dev_${RMRVERSION}_amd64.deb
+RUN rm -f rmr_${RMRVERSION}_amd64.deb rmr-dev_${RMRVERSION}_amd64.deb
+
+ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
+ENV C_INCLUDE_PATH /usr/local/include
+COPY init/test_route.rt /opt/route/test_route.rt
+ENV RMR_SEED_RT /opt/route/test_route.rt
 
 # Install
 COPY setup.py /tmp
@@ -45,6 +50,6 @@ ENV DBAAS_SERVICE_PORT=6379
 ENV DBAAS_SERVICE_HOST=service-ricplt-dbaas-tcp.ricplt.svc.cluster.local
 
 #Run
-CMD run-xapp.py
+CMD PYTHONPATH=/src:/usr/lib/python3.11/site-packages/:$PYTHONPATH run-xapp.py
 
 
