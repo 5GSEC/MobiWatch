@@ -9,8 +9,8 @@ from .formatter import LogFormatter
 import os
 import sys
 # import deeplog module
-current_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(current_dir, 'deeplog'))
+__current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.join(__current_dir, 'deeplog'))
 from .deeplog import MsgSeq
 from .deeplog import LSTM_onehot
 
@@ -46,7 +46,7 @@ class DeepLogAgent(DLAgent):
         self.train_label = "benign"
         self.train_ver = "v5"
         self.rat = "5G"
-        self.model_path = f"/tmp/src/ai/model/deeplog/save/LSTM_onehot_{self.train_dataset}_{self.train_label}_{self.train_ver}.pth.tar"
+        self.model_path = os.path.join(f"/tmp/LSTM_onehot_{self.train_dataset}_{self.train_label}_{self.train_ver}.pth.tar")
         self.model = torch.load(self.model_path)
         logging.info(f"DeepLog model loaded, model path: {self.model_path}")
         logging.info(f"{self.model}")
@@ -124,4 +124,5 @@ class DeepLogAgent(DLAgent):
         else:
             # Unexpected, malicious outcome
             self.logger.error(f"{keys_seq} => {keys_actual} out of prediction {keys_predicted}")
+
 

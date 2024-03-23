@@ -43,6 +43,9 @@ COPY src/ /tmp/src
 COPY init/ /tmp/init
 RUN pip install /tmp
 
+# Deploy model files
+COPY src/ai/deeplog/save/ /tmp/
+
 # Env - TODO- Configmap
 ENV PYTHONUNBUFFERED 1
 ENV CONFIG_FILE=/tmp/init/config-file.json
@@ -53,5 +56,6 @@ ENV DBAAS_SERVICE_HOST=service-ricplt-dbaas-tcp.ricplt.svc.cluster.local
 
 #Run
 CMD PYTHONPATH=/src:/usr/lib/python3.11/site-packages/:$PYTHONPATH run-xapp.py
+
 
 
