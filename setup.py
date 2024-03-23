@@ -36,8 +36,7 @@ setup(
     python_requires='>=3.8',
     install_requires=["ricxappframe==3.2.2",
                       "more-itertools",
-                      "numpy",
-                      "lightning"],
+                      "numpy"],
     entry_points={"console_scripts": ["run-xapp.py=src.main:launchXapp"]},  # adds a magical entrypoint for Docker
     data_files=[("", ["LICENSE.txt"])],
 )

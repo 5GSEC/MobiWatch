@@ -1,13 +1,18 @@
 import torch
 import torch.nn.functional as F
 import logging
-import sys
 from abc import ABC, abstractmethod
 from ..manager import SdlManager
 from ..mobiflow import UE_MOBIFLOW_NS, BS_MOBIFLOW_NS
 from .formatter import LogFormatter
-from .model.deeplog import MsgSeq
 
+import os
+import sys
+# import deeplog module
+current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.join(current_dir, 'deeplog'))
+from .deeplog import MsgSeq
+from .deeplog import LSTM_onehot
 
 class DLAgent(ABC):
 
@@ -97,7 +102,7 @@ class DeepLogAgent(DLAgent):
     def encode_mobiflow(self):
         if len(self.ue_mobiflow.keys()) <= 0:
             return None
-        self.encode(self.ue_mobiflow)
+        return self.encode(self.ue_mobiflow)
 
     def predict(self, seq):
         self.model.eval()

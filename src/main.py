@@ -16,11 +16,11 @@
 #
 # ==================================================================================
 
-from .xapp import TemplateXapp
+from .xapp import DeepWatchXapp
 
 
 def launchXapp():
-    template_xapp = TemplateXapp()
+    template_xapp = DeepWatchXapp()
     template_xapp.start()
 
 

@@ -33,6 +33,8 @@ ENV C_INCLUDE_PATH /usr/local/include
 COPY init/test_route.rt /opt/route/test_route.rt
 ENV RMR_SEED_RT /opt/route/test_route.rt
 
+RUN pip install torch==2.0.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
 # Install
 COPY setup.py /tmp
 COPY README.md /tmp

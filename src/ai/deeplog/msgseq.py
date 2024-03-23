@@ -1,7 +1,7 @@
 import numpy as np
 import more_itertools
-from ....mobiflow.mobiflow import UEMobiFlow, MOBIFLOW_DELIMITER
-from ....mobiflow.encoding import *
+from src.mobiflow.mobiflow import UEMobiFlow, MOBIFLOW_DELIMITER
+from src.mobiflow.encoding import *
 
 # Treat it as uni-variate time series data, use msg sequence only
 class MsgSeq:

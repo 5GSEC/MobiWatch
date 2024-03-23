@@ -24,7 +24,7 @@ from .handler import *
 from .ai.dlagent import DeepLogAgent
 from mdclogpy import Level
 
-class TemplateXapp:
+class DeepWatchXapp:
 
     __XAPP_CONFIG_PATH = getenv("CONFIG_FILE", default="/tmp/init/config-file.json")
     __XAPP_NAME = "deepwatch-xapp"
@@ -66,8 +66,9 @@ class TemplateXapp:
         self.dl_agent = DeepLogAgent()
         self.dl_agent.load_mobiflow(sdl_mgr)
         x, y = self.dl_agent.encode_mobiflow()
-        predict_y = self.dl_agent.predict(x)
-        self.dl_agent.interpret(x, predict_y, y)
+        for i in range(len(x)):
+            predict_y = self.dl_agent.predict(x[i])
+            self.dl_agent.interpret(x[i], predict_y, y[i])
 
     def _register(self, rmr_xapp):
         """
