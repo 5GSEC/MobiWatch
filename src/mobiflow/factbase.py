@@ -1,5 +1,5 @@
 import threading
-from src.mobiflow import *
+from .mobiflow import *
 
 class FactBase:
 

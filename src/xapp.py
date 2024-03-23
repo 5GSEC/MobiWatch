@@ -21,7 +21,7 @@ from ricxappframe.xapp_frame import RMRXapp, rmr
 from .utils.constants import Constants
 from .manager import *
 from .handler import *
-from .ai.dlagent import DLAgent, DeepLogAgent
+from .ai.dlagent import DeepLogAgent
 from mdclogpy import Level
 
 class TemplateXapp:
@@ -65,8 +65,9 @@ class TemplateXapp:
         # init DL agent
         self.dl_agent = DeepLogAgent()
         self.dl_agent.load_mobiflow(sdl_mgr)
-        x, y = self.dl_agent.encode_mobiflow_as_msg_seq()
-
+        x, y = self.dl_agent.encode_mobiflow()
+        predict_y = self.dl_agent.predict(x)
+        self.dl_agent.interpret(x, predict_y, y)
 
     def _register(self, rmr_xapp):
         """
