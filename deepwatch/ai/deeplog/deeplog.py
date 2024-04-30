@@ -17,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # window_size = 10 # Fixed for this demo 
 num_layers = 2 
 hidden_size = 64 # 32
-num_epochs = 500
+num_epochs = 1000
 batch_size = 128 # 2048
 num_candidates = 2 # top candidates
 
@@ -92,6 +92,7 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
             keys_predicted = [key_dict[p] for p in predicted]
             if label not in predicted:
                 FP += 1
+                print(f"{i};FP;{keys_seq};{key_dict[test_normal_label[i]]}")
             else:
                 TP += 1
 
