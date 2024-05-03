@@ -20,6 +20,8 @@ hidden_size = 64 # 32
 num_epochs = 1000
 batch_size = 128 # 2048
 num_candidates = 2 # top candidates
+prob_threshold = 0.90 # probability threshold
+roc = True # whether to plot ROC graph
 
 class LSTM_onehot(nn.Module):
     def __init__(self, hidden_size, num_layers, num_keys):
@@ -87,9 +89,19 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
             seq = F.one_hot(seq,num_classes=num_classes).float()
             label = torch.tensor(test_normal_label[i]).view(-1).to(device)
             output = model(seq)
-            predicted = torch.argsort(output, 1)[0][-num_candidates:]
+
+            ### Use Top candidates
+            # predicted = torch.argsort(output, 1)[0][-num_candidates:]
+            # keys_predicted = [key_dict[p] for p in predicted]
+
+            ### Use probability
+            probabilities = F.softmax(output, dim=1)
+            sorted_probs, indices = torch.sort(probabilities, descending=True)
+            cumulative_probs = torch.cumsum(sorted_probs, dim=1)
+            threshold_idx = (cumulative_probs >= prob_threshold).nonzero(as_tuple=True)[1][0]
+            predicted = indices[:, :threshold_idx + 1]
+            
             keys_seq = [key_dict[s] for s in test_normal_seq[i]]
-            keys_predicted = [key_dict[p] for p in predicted]
             if label not in predicted:
                 FP += 1
                 print(f"{i};FP;{keys_seq};{key_dict[test_normal_label[i]]}")
@@ -108,6 +120,9 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
     FP = 0
     TN = 0
     FN = 0
+    # ROC
+    y_scores = []
+    y_true = []
     with torch.no_grad():
         test_abnormal_seq = test_abnormal_loader["train_normal_seq"]
         test_abnormal_label = test_abnormal_loader["train_normal_label"]
@@ -116,14 +131,28 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
             seq = F.one_hot(seq,num_classes=num_classes).float()
             label = torch.tensor(test_abnormal_label[i]).view(-1).to(device)
             output = model(seq)
-            predicted = torch.argsort(output, 1)[0][-num_candidates:]
-            keys_predicted = [key_dict[p] for p in predicted]
             keys_seq = [key_dict[s] for s in test_abnormal_seq[i]]
+
+            ### Use Top candidates
+            # predicted = torch.argsort(output, 1)[0][-num_candidates:]
+            # keys_predicted = [key_dict[p] for p in predicted]
+
+            ### Use probability
+            probabilities = F.softmax(output, dim=1)
+            sorted_probs, indices = torch.sort(probabilities, descending=True)
+            cumulative_probs = torch.cumsum(sorted_probs, dim=1)
+            threshold_idx = (cumulative_probs >= prob_threshold).nonzero(as_tuple=True)[1][0]
+            predicted = indices[:, :threshold_idx + 1]
+
+            # ROC metrics
+            if roc:
+                sorted_label_index = (indices == test_abnormal_label[i]).nonzero(as_tuple=True)[1][0]
+                rank = 1 - 1 / (sorted_label_index.item() + 1)
+                y_scores.append(rank)
+                y_true.append([str(keys_seq), key_dict[test_abnormal_label[i]], True] in ground_truth)
+
             if label not in predicted:
                 is_attack = True
-                # print([str(keys_seq), key_dict[test_abnormal_label[i]], is_attack] in ground_truth)
-                # print(ground_truth[0])
-                # exit(0)
                 if [str(keys_seq), key_dict[test_abnormal_label[i]], is_attack] in ground_truth:
                     TP += 1
                 else:
@@ -145,11 +174,38 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
     P = 100 * TP / (TP + FP)
     R = 100 * TP / (TP + FN)
     F1 = 2 * P * R / (P + R)
+    fpr = 100 * FP / (FP + TN)
+    tpr = 100 * TP / (TP + FN)
     print("Attack dataset:", TP, TN, FP, FN, len(test_abnormal_seq))
     print('false positive (FP): {}, false negative (FN): {}, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, P, R, F1))
+    print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
     print()
     print('elapsed_time: {:.3f}s'.format(elapsed_time))
     print('Finished Predicting')
+
+    # ROC
+    if roc:
+        from sklearn.metrics import roc_curve, auc
+        import matplotlib.pyplot as plt
+        # print(y_true)
+        # print(y_scores)
+        fpr, tpr, thresholds = roc_curve(y_true, y_scores)
+        # print(fpr.tolist())
+        # print(tpr.tolist())
+        # print(thresholds.tolist())
+        roc_auc = auc(fpr, tpr)
+        lw = 2
+        plt.plot(fpr, tpr, color='darkorange', lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver Operating Characteristic Plot')
+        plt.legend(loc="lower right")
+        plt.savefig("roc.png")
+        print(f"ROC AUC: {roc_auc}")
+
 
 
 # def test_deeplog(model, test_normal_loader, test_abnormal_loader):
