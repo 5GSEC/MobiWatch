@@ -6,14 +6,15 @@ import json
 import sys
 from utils import Normalizer, multiLSTM_seqformat
 from train import train_dataset, train_label, train_ver, normalize, window_size
-from deeplog import train_deeplog, test_deeplog
+from deeplog import train_deeplog, test_deeplog, evaluate_roc
 
 # train data
 train_dataset = "5g-select"
 train_label = "benign"
 train_ver = "v5"
 
-model = torch.load(f'save/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar')
+# model = torch.load(f'save/saved_LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar') # trained on 5G-Colosseum-Benign
+model = torch.load(f'save/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar') # trained on 5G-select
 print(model)
 
 # test data
@@ -37,14 +38,14 @@ if __name__ == "__main__":
 
     # load ground truth
     gt = []
-    with open(f'../../preprocessing/data/groundtruth/{test_dataset}_{test_label}_{test_ver}_{window_size}', "r") as i:
+    with open(f'../../preprocessing/groundtruth/{test_dataset}_{test_label}_{test_ver}_{window_size}', "r") as i:
         for line in i.readlines():
             tokens = line.strip().split("\t")
             if tokens[2] == "FALSE":
                 tokens[2] = False
             elif tokens[2] == "TRUE":
                 tokens[2] = True
-            gt.append(tokens)
+            gt.append(tokens[2])
 
     # Validate the performance of trained model
     test_normal_loader = np.load(f'../../preprocessing/data/{train_dataset}_{train_label}_{train_ver}.npz',allow_pickle=True)
@@ -78,6 +79,7 @@ if __name__ == "__main__":
 
     key_dict = feature.keys
     test_deeplog(model, test_normal_loader, test_abnormal_loader, num_class, window_size, key_dict, gt)
+    # evaluate_roc(model, test_normal_loader, test_abnormal_loader, num_class, window_size, key_dict, gt)
 
     # analysis
     analysis = False
