@@ -3,7 +3,7 @@
 # Train an autoencoder-based DL model
 import numpy as np
 import torch
-from deeplog import train_deeplog, test_deeplog
+from deeplog import train_deeplog
 from utils import validate_by_rmse, Normalizer
 import sys
 

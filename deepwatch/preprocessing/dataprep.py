@@ -19,12 +19,14 @@ class DataLoader:
         self.dataset_mobileinsight = "/home/wen.423/Desktop/5g/mobileinsight-core/examples/jsonlogs"
         self.dataset_5g_colosseum = "/home/wen.423/Desktop/5g/5g-ai/colosseum-logs/1024-NR-5UE-10011-NORMAL/osu-seclab-oai-secsm-ran-ue-img-1021-srn59-RES139156/pcaps"
         self.dataset_5g_select = "/home/wen.423/Desktop/5g/dataset/5g-select"
+        self.dataset_5g_colosseum_2 = "/home/wen.423/Desktop/5g/dataset/5g-colosseum-2"
 
         self.mobiflow_phoenix = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/phoenix"
         self.mobiflow_5g_spector = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-spector"
         self.mobiflow_mobileinsight = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/mobile-insight"
         self.mobiflow_5g_colosseum = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-colosseum"
         self.mobiflow_5g_select = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-select"
+        self.mobiflow_5g_colosseum_2 = "/home/wen.423/Desktop/5g/5g-ai/mobiflow/5g-colosseum-2"
 
         self.dataset_name = ""
         self.abnormal = None
@@ -124,6 +126,19 @@ class DataLoader:
             type = "benign"
             forbidden_set = []
             label = 0
+
+        elif dataset_name == "5g-colosseum-2":
+            mf_folder = self.mobiflow_5g_colosseum_2
+            if abnormal == True:
+                mf_folder = os.path.join(mf_folder, "attack")
+                type = "abnormal"
+                forbidden_set = []
+                label = 1
+            else:
+                mf_folder = os.path.join(mf_folder, "benign")
+                type = "benign"
+                forbidden_set = []
+                label = 0
 
         else:
             raise NotImplementedError
@@ -292,4 +307,5 @@ dl = DataLoader()
 # dl.load_data("5g-colosseum", True, ver)
 # dl.load_data("5g-colosseum", False, ver)
 dl.load_data("5g-select", False, ver)
-
+# dl.load_data("5g-colosseum-2", True, ver)
+# dl.load_data("5g-colosseum-2", False, ver)

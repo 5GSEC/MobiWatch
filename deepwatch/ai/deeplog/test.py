@@ -6,14 +6,13 @@ import json
 import sys
 from utils import Normalizer, multiLSTM_seqformat
 from train import train_dataset, train_label, train_ver, normalize, window_size
-from deeplog import train_deeplog, test_deeplog, evaluate_roc
+from deeplog import train_deeplog, test_deeplog_benign, test_deeplog_abnormal, evaluate_roc
 
 # train data
 train_dataset = "5g-select"
 train_label = "benign"
 train_ver = "v5"
 
-# model = torch.load(f'save/saved_LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar') # trained on 5G-Colosseum-Benign
 model = torch.load(f'save/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar') # trained on 5G-select
 print(model)
 
@@ -34,8 +33,6 @@ feature = FeatureV5(rat)
 num_class = len(feature.keys)
 
 if __name__ == "__main__":
-    print(test_dataset, test_label, test_ver)
-
     # load ground truth
     gt = []
     with open(f'../../preprocessing/groundtruth/{test_dataset}_{test_label}_{test_ver}_{window_size}', "r") as i:
@@ -78,7 +75,9 @@ if __name__ == "__main__":
     # print(test_normal_seq.shape, test_normal_label.shape)
 
     key_dict = feature.keys
-    test_deeplog(model, test_normal_loader, test_abnormal_loader, num_class, window_size, key_dict, gt)
+
+    test_deeplog_benign(model, test_normal_loader, num_class, window_size, key_dict)
+    test_deeplog_abnormal(model, test_abnormal_loader, num_class, window_size, key_dict, gt)
     # evaluate_roc(model, test_normal_loader, test_abnormal_loader, num_class, window_size, key_dict, gt)
 
     # analysis

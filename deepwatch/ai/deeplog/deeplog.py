@@ -70,15 +70,13 @@ def train_deeplog(input_seq, output_label, num_classes, window_size):
 
     return model
 
-# New test function for 5G
-def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, window_size, key_dict, ground_truth):
+def test_deeplog_benign(model, test_normal_loader, num_classes, window_size, key_dict):
+    print("============== Deeplog evaluation on Benign Dataset ==============")
     model.eval()
     TP = 0
     FP = 0
     TN = 0
     FN = 0
-    # Test the model
-    start_time = time.time()
 
     # benign dataset
     with torch.no_grad():
@@ -116,6 +114,12 @@ def test_deeplog(model, test_normal_loader, test_abnormal_loader, num_classes, w
     print('False positive (FP): {}, True negative (FN): {}, FP Rate: {:.3f}%'.format(FP, TN, fpr))
     print()
 
+
+def test_deeplog_abnormal(model, test_abnormal_loader, num_classes, window_size, key_dict, ground_truth):
+    print("============== Deeplog evaluation on Abnormal Dataset ==============")
+    model.eval()
+    # Test the model
+    start_time = time.time()
     # attack dataset
     TP = 0
     FP = 0
