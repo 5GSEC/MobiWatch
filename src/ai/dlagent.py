@@ -101,7 +101,7 @@ class DeepLogAgent(DLAgent):
 
     def encode_mobiflow(self):
         if len(self.ue_mobiflow.keys()) <= 0:
-            return None
+            return [],[]
         return self.encode(self.ue_mobiflow)
 
     def predict(self, seq):
