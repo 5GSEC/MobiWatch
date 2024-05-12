@@ -40,13 +40,10 @@ class DLAgent(ABC):
 
 
 class DeepLogAgent(DLAgent):
-    def __init__(self, window_size=5, num_candidates=1):
+    def __init__(self, model_path, window_size=5, ranking_metric="top-k", num_candidates=1, prob_threshold=0.40):
         super().__init__()
-        self.train_dataset = "5g-select"
-        self.train_label = "benign"
-        self.train_ver = "v5"
         self.rat = "5G"
-        self.model_path = os.path.join(f"/tmp/LSTM_onehot_{self.train_dataset}_{self.train_label}_{self.train_ver}.pth.tar")
+        self.model_path = model_path
         self.model = torch.load(self.model_path)
         logging.info(f"DeepLog model loaded, model path: {self.model_path}")
         logging.info(f"{self.model}")
@@ -55,7 +52,9 @@ class DeepLogAgent(DLAgent):
         self.window_size = window_size
         self.encoder = MsgSeq()
         self.num_classes = len(self.encoder.get_keys())
+        self.ranking_metric = ranking_metric
         self.num_candidates = num_candidates  # top candidates for prediction range
+        self.prob_threshold = prob_threshold
 
         # latest mobiflow index read from the database
         self.ue_mobiflow_idx = 0
@@ -110,8 +109,22 @@ class DeepLogAgent(DLAgent):
             encode_seq = torch.tensor(seq, dtype=torch.long).view(-1, self.window_size).to(self.device)
             encode_seq = F.one_hot(encode_seq, num_classes=self.num_classes).float()
             output = self.model(encode_seq)
-            predicted = torch.argsort(output, 1)[0][-self.num_candidates:]
-        return predicted
+            if self.ranking_metric == "top-k":
+                ### Use Top candidates
+                predicted = torch.argsort(output, 1)[0][-self.num_candidates:]
+                return predicted
+            elif self.ranking_metric == "probability":
+                ### Use probability
+                probabilities = F.softmax(output, dim=1)
+                sorted_probs, indices = torch.sort(probabilities, descending=True)
+                cumulative_probs = torch.cumsum(sorted_probs, dim=1)
+                threshold_idx = (cumulative_probs >= self.prob_threshold).nonzero(as_tuple=True)[1][0]
+                predicted = indices[:, :threshold_idx + 1]
+                predicted_list = [p.item() for p in predicted[0]]
+                return predicted_list
+            else:
+                raise NotImplementedError
+            
 
     def interpret(self, seq, predicted, actual):
         key_dict = self.encoder.get_keys()

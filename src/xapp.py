@@ -16,6 +16,7 @@
 #
 # ==================================================================================
 import requests
+import os
 from os import getenv
 from ricxappframe.xapp_frame import RMRXapp, rmr
 from .utils.constants import Constants
@@ -62,8 +63,14 @@ class DeepWatchXapp:
         # register the xApp to the RIC manager
         self._register(rmr_xapp)
 
+        # model path
+        train_dataset = "5g-select"
+        train_label = "benign"
+        train_ver = "v5"
+        model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
+
         # init DL agent
-        self.dl_agent = DeepLogAgent()
+        self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)
         self.dl_agent.load_mobiflow(sdl_mgr)
         x, y = self.dl_agent.encode_mobiflow()
         for i in range(len(x)):
