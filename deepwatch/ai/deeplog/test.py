@@ -17,7 +17,7 @@ model = torch.load(f'save/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.
 print(model)
 
 # test data
-test_dataset = "5g-colosseum"
+test_dataset = "5g-colosseum-2"
 test_label = "abnormal"
 test_ver = "v5"
 
@@ -35,14 +35,17 @@ num_class = len(feature.keys)
 if __name__ == "__main__":
     # load ground truth
     gt = []
-    with open(f'../../preprocessing/groundtruth/{test_dataset}_{test_label}_{test_ver}_{window_size}', "r") as i:
-        for line in i.readlines():
-            tokens = line.strip().split("\t")
-            if tokens[2] == "FALSE":
-                tokens[2] = False
-            elif tokens[2] == "TRUE":
-                tokens[2] = True
-            gt.append(tokens[2])
+    # try:
+    #     with open(f'../../preprocessing/groundtruth/{test_dataset}_{test_label}_{test_ver}_{window_size}', "r") as i:
+    #         for line in i.readlines():
+    #             tokens = line.strip().split("\t")
+    #             if tokens[2] == "FALSE":
+    #                 tokens[2] = False
+    #             elif tokens[2] == "TRUE":
+    #                 tokens[2] = True
+    #             gt.append(tokens[2])
+    # except FileNotFoundError:
+    #     print(f"Ground truth data for {test_dataset}_{test_label}_{test_ver}_{window_size} not found")
 
     # Validate the performance of trained model
     test_normal_loader = np.load(f'../../preprocessing/data/{train_dataset}_{train_label}_{train_ver}.npz',allow_pickle=True)

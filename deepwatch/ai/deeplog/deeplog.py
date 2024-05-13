@@ -20,7 +20,7 @@ hidden_size = 64 # 32
 num_epochs = 1000
 batch_size = 128 # 2048
 num_candidates = 2 # top candidates
-prob_threshold = 0.80 # probability threshold
+prob_threshold = 0.40 # probability threshold
 ranking_metric = "probability" # "probability" or "top-k"
 
 class LSTM_onehot(nn.Module):
@@ -128,6 +128,7 @@ def test_deeplog_abnormal(model, test_abnormal_loader, num_classes, window_size,
     # ROC
     y_scores = []
     y_true = []
+    probs = []
     with torch.no_grad():
         test_abnormal_seq = test_abnormal_loader["train_normal_seq"]
         test_abnormal_label = test_abnormal_loader["train_normal_label"]
@@ -153,34 +154,62 @@ def test_deeplog_abnormal(model, test_abnormal_loader, num_classes, window_size,
             else:
                 raise NotImplementedError
 
-            if label not in predicted:
-                is_attack = True # model prediction -> positive
-                if ground_truth[i] == True: # ground truth -> positive
-                    TP += 1
-                else: # ground truth -> negative
-                    FP += 1
-                    # print FP cases
-                    print(f"{i};FP;{keys_seq};{key_dict[test_abnormal_label[i]]}")
+            if len(ground_truth) == len(test_abnormal_seq):
+                # evaluate with ground truth
+                if label not in predicted:
+                    is_attack = True # model prediction -> positive
+                    if ground_truth[i] == True: # ground truth -> positive
+                        TP += 1
+                    else: # ground truth -> negative
+                        FP += 1
+                        # print FP cases
+                        print(f"{i};FP;{keys_seq};{key_dict[test_abnormal_label[i]]}")
+                else:
+                    is_attack = False # model prediction -> negative
+                    if ground_truth[i] == False: # ground truth -> negative
+                        TN += 1
+                    else: # ground truth -> positive
+                        FN += 1
+                        # print FN cases
+                        print(f"{i};FN;{keys_seq};{key_dict[test_abnormal_label[i]]}")
             else:
-                is_attack = False # model prediction -> negative
-                if ground_truth[i] == False: # ground truth -> negative
-                    TN += 1
-                else: # ground truth -> positive
-                    FN += 1
-                    # print FN cases
-                    print(f"{i};FN;{keys_seq};{key_dict[test_abnormal_label[i]]}")
+                # no groundtruth, just print abnormal prediction
+                if ranking_metric == "probability":
+                    prob = probabilities[0][label].item()
+                    probs.append(prob)
+                elif ranking_metric == "top-k":
+                    pass
+
+                if label not in predicted:
+                    is_attack = True # model prediction -> positive
+                    print(f"{i};Abnormal;{keys_seq};{key_dict[test_abnormal_label[i]]};{prob}")
+                else:
+                    print(f"{i};Benign;{keys_seq};{key_dict[test_abnormal_label[i]]};{prob}")
+
+    plot = True
+    if plot:
+        import matplotlib.pyplot as plt
+        # Creating a simple line chart
+        plt.figure(figsize=(10, 5))
+        plt.plot(probs, marker='o', linestyle='-', color='b')  # Plotting the line chart
+        plt.title('LSTM Prediction Probabilities')  # Title of the chart
+        plt.xlabel('Seq Index')  # X-axis label
+        plt.ylabel('Probability')  # Y-axis label
+        plt.grid(True)  # Adding a grid
+        plt.savefig("line.png")  # Display the plot
               
 
     elapsed_time = time.time() - start_time
-    # Compute precision, recall and F1-measure
-    P = 100 * TP / (TP + FP)
-    R = 100 * TP / (TP + FN)
-    F1 = 2 * P * R / (P + R)
-    fpr = 100 * FP / (FP + TN)
-    tpr = 100 * TP / (TP + FN)
-    print("Attack dataset:", TP, TN, FP, FN, len(test_abnormal_seq))
-    print('false positive (FP): {}, false negative (FN): {}, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, P, R, F1))
-    print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
+    if len(ground_truth) == len(test_abnormal_seq):
+        # Compute precision, recall and F1-measure
+        P = 100 * TP / (TP + FP)
+        R = 100 * TP / (TP + FN)
+        F1 = 2 * P * R / (P + R)
+        fpr = 100 * FP / (FP + TN)
+        tpr = 100 * TP / (TP + FN)
+        print("Attack dataset:", TP, TN, FP, FN, len(test_abnormal_seq))
+        print('false positive (FP): {}, false negative (FN): {}, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, P, R, F1))
+        print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
     print()
     print('elapsed_time: {:.3f}s'.format(elapsed_time))
     print('Finished Predicting')
