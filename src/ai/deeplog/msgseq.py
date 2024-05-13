@@ -54,10 +54,16 @@ class MsgSeq:
             y (list): list of messages for Deeplog outputs
         """
         mf_data = []
+        rrc_is_encrypted = False
         for trace in trace_list:
             if trace.startswith("BS"):
                 continue
             tokens = trace.split(MOBIFLOW_DELIMITER)
+
+            # skip subsequent RRC messages if encrypted
+            rrc_cipher_alg = int(tokens[self.mobiflow_meta_data.index("cipher_alg")])
+            if rrc_cipher_alg > 0 and rrc_is_encrypted:
+                continue 
 
             skip = False
             for idx in self.selected_feature_idx:
@@ -68,6 +74,9 @@ class MsgSeq:
                         skip = True
                         break
                     mf_data.append(msg_idx)
+                
+                    if msg_idx == self.keys.index("SecurityModeComplete") and rrc_cipher_alg > 0:
+                        rrc_is_encrypted = True
 
             if skip:
                 continue
