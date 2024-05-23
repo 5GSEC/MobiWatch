@@ -1,14 +1,24 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
 from model import Autoencoder
 from encoding import nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+# Define the Autoencoder model architecture
+
+# Load the saved model
+input_dim = 440  # This should match the input_dim used during training
+encoding_dim = 50  # This should match the encoding_dim used during training
+model_path = "./data/autoencoder_model.pth"
+
+model = Autoencoder(input_dim, encoding_dim)
+model.load_state_dict(torch.load(model_path))
+model.eval()
+print(f"Model loaded from {model_path}")
+
+# Data Preparation
 train_dataset = "5g-select"
 train_label = "benign"
 
@@ -41,48 +51,10 @@ sequence_length = 5
 num_sequences = X.shape[0] - sequence_length + 1
 X_sequences = np.array([X[i:i + sequence_length].flatten() for i in range(num_sequences)])
 
-# Split data into training and test sets
-X_train, X_test = train_test_split(X_sequences, test_size=0.2, random_state=42)
-
 # Convert to PyTorch tensors
-X_train = torch.tensor(X_train, dtype=torch.float32)
-X_test = torch.tensor(X_test, dtype=torch.float32)
-
-# Create DataLoader for training
-train_dataset = TensorDataset(X_train, X_train)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-
-# Define the Autoencoder model
-input_dim = X_train.shape[1]
-encoding_dim = 50  # You can adjust this value based on your requirements
-model = Autoencoder(input_dim, encoding_dim)
-
-# Compile and train the model
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-num_epochs = 1000
-for epoch in range(num_epochs):
-    for data in train_loader:
-        inputs, _ = data
-        outputs = model(inputs)
-        loss = criterion(outputs, inputs)
-        
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        
-    if (epoch+1) % 10 == 0:
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
-
-# Save the model
-model_path = "./data/autoencoder_model.pth"
-torch.save(model.state_dict(), model_path)
-print(f"Model saved to {model_path}")
+X_test = torch.tensor(X_sequences, dtype=torch.float32)
 
 # Detect anomalies
-model.eval()
-
 with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
