@@ -6,18 +6,6 @@ from model import Autoencoder, positional_encoding
 from encoding import nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-# Define the Autoencoder model architecture
-
-# Load the saved model
-input_dim = 665  # This should match the input_dim used during training
-encoding_dim = 50  # This should match the encoding_dim used during training
-model_path = "./data/autoencoder_model.pth"
-
-model = Autoencoder(input_dim, encoding_dim)
-model.load_state_dict(torch.load(model_path))
-model.eval()
-print(f"Model loaded from {model_path}")
-
 # Data Preparation
 train_dataset = "5g-select"
 train_label = "benign"
@@ -62,12 +50,22 @@ X_sequences = np.array([X[i:i + sequence_length].flatten() for i in range(num_se
 # Convert to PyTorch tensors
 X_test = torch.tensor(X_sequences, dtype=torch.float32)
 
+# Load the saved model
+input_dim = X_test.shape[1]  # This should match the input_dim used during training
+encoding_dim = 50  # This should match the encoding_dim used during training
+model_path = "./data/autoencoder_model.pth"
+
+model = Autoencoder(input_dim, encoding_dim)
+model.load_state_dict(torch.load(model_path))
+model.eval()
+print(f"Model loaded from {model_path}")
+
 # Detect anomalies
 with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
 
-threshold = np.percentile(reconstruction_error.numpy(), 95)
+threshold = np.percentile(reconstruction_error.numpy(), 75)
 anomalies = reconstruction_error > threshold
 
 # Convert back to DataFrame
