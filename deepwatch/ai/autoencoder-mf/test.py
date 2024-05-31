@@ -17,7 +17,7 @@ df = pd.read_csv(f'./data/{test_dataset}_{test_label}_mobiflow.csv', header=0, d
 # Handle missing values
 df.fillna(0, inplace=True)
 
-sequence_length = 8
+sequence_length = 10
 encoder = Encoder()
 X_sequences = encoder.encode_mobiflow(df, sequence_length)
 
@@ -42,12 +42,38 @@ percentile = 80
 threshold = np.percentile(reconstruction_error.numpy(), percentile)
 anomalies = reconstruction_error > threshold
 
+# ground truth
+gt = {"blind dos": [10, 21, 32], 
+      "downlink dos": [38],
+      "downlink imsi extr": [102],
+      "uplink imsi extr": list(range(42, 47)),
+      "uplink dos": [71, 72],
+      "bts ddos": list(range(52, 64))+list(range(88, 97))+list(range(107, 125)),
+      "null cipher": list(range(80, 84))
+      }
+
 # Convert back to DataFrame
 for anomalies_idx in torch.nonzero(anomalies).squeeze():
     df_idx = anomalies_idx
     sequence_data = df.loc[df_idx:df_idx + sequence_length - 1]
     df_sequence = pd.DataFrame(sequence_data, columns=encoder.identifier_features + encoder.numerical_features + encoder.categorical_features)
     print(df_sequence)
+
+    # evaluation with ground truth
+    attack_found = False
+    for attack in gt.keys():
+        for attack_idx in gt[attack]:
+            if attack_idx in range(anomalies_idx, anomalies_idx + sequence_length): 
+                attack_found = True
+                break
+        if attack_found:
+            break
+    
+    if attack_found:
+        print(f"Attack: {attack}")
+    else:
+        print(f"False Positive")
+
     print()
 
 # plot graph - reconstruction err w.r.t. to each sequence
