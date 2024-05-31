@@ -17,7 +17,7 @@ df = pd.read_csv(f'./data/{test_dataset}_{test_label}_mobiflow.csv', header=0, d
 # Handle missing values
 df.fillna(0, inplace=True)
 
-sequence_length = 6
+sequence_length = 8
 encoder = Encoder()
 X_sequences = encoder.encode_mobiflow(df, sequence_length)
 
@@ -38,7 +38,8 @@ with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
 
-threshold = np.percentile(reconstruction_error.numpy(), 85)
+percentile = 80
+threshold = np.percentile(reconstruction_error.numpy(), percentile)
 anomalies = reconstruction_error > threshold
 
 # Convert back to DataFrame
@@ -48,6 +49,20 @@ for anomalies_idx in torch.nonzero(anomalies).squeeze():
     df_sequence = pd.DataFrame(sequence_data, columns=encoder.identifier_features + encoder.numerical_features + encoder.categorical_features)
     print(df_sequence)
     print()
+
+# plot graph - reconstruction err w.r.t. to each sequence
+plot = True
+if plot:
+    import matplotlib.pyplot as plt
+    # Creating a simple line chart
+    plt.figure(figsize=(10, 5))
+    plt.plot(reconstruction_error, marker='o', linestyle='-', color='b')  # Plotting the line chart
+    plt.axhline(y=threshold, color='r', linestyle='-') # threshold
+    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {percentile/100:.0%})')  # Title of the chart
+    plt.xlabel('Seq Index')  # X-axis label
+    plt.ylabel('AE Error')  # Y-axis label
+    plt.grid(True)  # Adding a grid
+    plt.savefig("test.png")  # Display the plot
 
 # Output the anomalies
 # anomalous_data = X_test[anomalies]
