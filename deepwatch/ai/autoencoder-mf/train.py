@@ -1,14 +1,12 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-from model import Autoencoder, positional_encoding
-from encoding import nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR
-
+from model import Autoencoder
+from encoder import Encoder
 
 train_dataset = "5g-select"
 train_label = "benign"
@@ -18,34 +16,10 @@ df = pd.read_csv(f'./data/{train_dataset}_{train_label}_mobiflow.csv', header=0,
 # Handle missing values
 df.fillna(0, inplace=True)
 
-# Apply Positional Encoding to identifier features
-identifier_features = ['rnti', 'tmsi', 'imsi']
-encoded_identifiers = [positional_encoding(df[feature].values, 16) for feature in identifier_features]
-encoded_identifiers = np.hstack(encoded_identifiers)
-
-# Encode categorical variables
-msg_dicts = [nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR]
-possible_categories = {
-    'msg': [value for d in msg_dicts for value in d.values()]
-}
-
-categorical_features = ['msg']
-encoder = OneHotEncoder(categories=[possible_categories[feature] for feature in categorical_features], sparse=False)
-encoded_cat_features = encoder.fit_transform(df[categorical_features])
-
-# Normalize numerical variables
-# numerical_features = ['ts', 'rnti', 'tmsi', 'imsi', 'imei', 'cipher_alg', 'int_alg', 'est_cause']
-numerical_features = ['cipher_alg', 'int_alg']
-scaler = StandardScaler()
-scaled_num_features = scaler.fit_transform(df[numerical_features])
-
-# Combine features
-X = np.hstack([encoded_identifiers, scaled_num_features, encoded_cat_features])
-
-# Reshape data to include sequences of network traces
-sequence_length = 5
-num_sequences = X.shape[0] - sequence_length + 1
-X_sequences = np.array([X[i:i + sequence_length].flatten() for i in range(num_sequences)])
+sequence_length = 6
+encoder = Encoder()
+X_sequences = encoder.encode_mobiflow(df, sequence_length)
+print(X_sequences.shape)
 
 # Split data into training and test sets
 indices = np.arange(X_sequences.shape[0])
@@ -61,14 +35,13 @@ train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 # Define the Autoencoder model
 input_dim = X_train.shape[1]
-encoding_dim = 50  # You can adjust this value based on your requirements
-model = Autoencoder(input_dim, encoding_dim)
+model = Autoencoder(input_dim)
 
 # Compile and train the model
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-num_epochs = 500
+num_epochs = 200
 for epoch in range(num_epochs):
     for data in train_loader:
         inputs, _ = data
@@ -94,17 +67,18 @@ with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
 
-threshold = np.percentile(reconstruction_error.numpy(), 95)
+threshold = np.percentile(reconstruction_error.numpy(), 85)
 anomalies = reconstruction_error > threshold
 
 
 # Convert back to DataFrame
-for anomalies_idx in torch.nonzero(anomalies).squeeze():
-    df_idx = indices_test[anomalies_idx]
-    sequence_data = df.loc[df_idx:df_idx + sequence_length]
-    df_sequence = pd.DataFrame(sequence_data, columns=identifier_features + numerical_features + categorical_features)
-    print(df_sequence)
-    print()
+if len(anomalies) > 0:
+    for anomalies_idx in torch.nonzero(anomalies).squeeze():
+        df_idx = indices_test[anomalies_idx]
+        sequence_data = df.loc[df_idx:df_idx + sequence_length - 1]
+        df_sequence = pd.DataFrame(sequence_data, columns=encoder.identifier_features + encoder.numerical_features + encoder.categorical_features)
+        print(df_sequence)
+        print()
 
 
 # Output the anomalies

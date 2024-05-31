@@ -1,6 +1,9 @@
-attack: row indices
+[attack]: [row indices]
 blind dos: 10, 21, 32
 downlink dos: 38
+downlink imsi: 102
 uplink imsi: 42-46
-bts ddos: 56-63, 88-96, 107-124
+uplink dos: 71-72
+bts ddos: 52-63, 88-96, 107-124
 null cipher: 80-83
+otherwise benign

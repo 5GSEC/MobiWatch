@@ -1,30 +1,39 @@
-from torch import nn
 import numpy as np
-
-# Positional Encoding Function
-def positional_encoding(identifier, dimension):
-    position = np.arange(len(identifier)).reshape(-1, 1)
-    div_term = np.exp(np.arange(0, dimension, 2) * -(np.log(10000.0) / dimension))
-    pos_enc = np.zeros((len(identifier), dimension))
-    pos_enc[:, 0::2] = np.sin(position * div_term)
-    pos_enc[:, 1::2] = np.cos(position * div_term)
-    return pos_enc
+from torch import nn
 
 class Autoencoder(nn.Module):
-    def __init__(self, input_dim, encoding_dim):
+    def __init__(self, input_dim):
         super(Autoencoder, self).__init__()
-        self.encoder = nn.Sequential(
-            nn.Linear(input_dim, encoding_dim),
-            nn.Tanh(),
-            nn.Linear(encoding_dim, encoding_dim // 2),
-            nn.ReLU()
-        )
-        self.decoder = nn.Sequential(
-            nn.Linear(encoding_dim // 2, encoding_dim),
-            nn.Tanh(),
-            nn.Linear(encoding_dim, input_dim),
-            nn.ReLU()
-        )
+        # self.encoder = nn.Sequential(
+        #     nn.Linear(input_dim, encoding_dim),
+        #     nn.Tanh(),
+        #     nn.Linear(encoding_dim, encoding_dim // 2),
+        #     nn.ReLU()
+        # )
+        # self.decoder = nn.Sequential(
+        #     nn.Linear(encoding_dim // 2, encoding_dim),
+        #     nn.Tanh(),
+        #     nn.Linear(encoding_dim, input_dim),
+        #     nn.ReLU()
+        # )
+
+        # The Kitsune AE model
+        self.encoder = nn.Sequential(nn.Linear(input_dim, int(input_dim*0.75)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.75), int(input_dim*0.5)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.5),int(input_dim*0.25)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.25),int(input_dim*0.1)))
+
+        self.decoder = nn.Sequential(nn.Linear(int(input_dim*0.1),int(input_dim*0.25)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.25),int(input_dim*0.5)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.5),int(input_dim*0.75)),
+                                     nn.ReLU(True),
+                                     nn.Linear(int(input_dim*0.75),int(input_dim)),
+                                     )
 
     def forward(self, x):
         x = self.encoder(x)
