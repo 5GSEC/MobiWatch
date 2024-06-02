@@ -16,14 +16,16 @@ df = pd.read_csv(f'./data/{train_dataset}_{train_label}_mobiflow.csv', header=0,
 # Handle missing values
 df.fillna(0, inplace=True)
 
-sequence_length = 8
+sequence_length = 6
 encoder = Encoder()
 X_sequences = encoder.encode_mobiflow(df, sequence_length)
 print(X_sequences.shape)
 
 # Split data into training and test sets
+seed = 2 # 42
 indices = np.arange(X_sequences.shape[0])
-X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=0.2, random_state=42)
+# X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=0.2, random_state=seed)
+X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=0.1, random_state=seed)
 
 # Convert to PyTorch tensors
 X_train = torch.tensor(X_train, dtype=torch.float32)
@@ -31,7 +33,7 @@ X_test = torch.tensor(X_test, dtype=torch.float32)
 
 # Create DataLoader for training
 train_dataset = TensorDataset(X_train, X_train)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
 # Define the Autoencoder model
 input_dim = X_train.shape[1]
@@ -41,7 +43,7 @@ model = Autoencoder(input_dim)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-num_epochs = 200
+num_epochs = 500
 for epoch in range(num_epochs):
     for data in train_loader:
         inputs, _ = data
@@ -53,11 +55,18 @@ for epoch in range(num_epochs):
         optimizer.step()
         
     if (epoch+1) % 10 == 0:
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.6f}')
 
 # Save the model
 model_path = "./data/autoencoder_model.pth"
-torch.save(model.state_dict(), model_path)
+
+with torch.no_grad():
+    reconstructions = model(X_train)
+    reconstruction_error = torch.mean((X_train - reconstructions) ** 2, dim=1)
+    percentile = 95
+    threshold = np.percentile(reconstruction_error.numpy(), percentile) # we assume the training set contains X% anomalous data
+
+torch.save({'model': model, "threshold": threshold}, model_path)
 print(f"Model saved to {model_path}")
 
 # Detect anomalies
@@ -67,10 +76,7 @@ with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
 
-percentile = 85
-threshold = np.percentile(reconstruction_error.numpy(), percentile)
 anomalies = reconstruction_error > threshold
-
 
 # Convert back to DataFrame
 if len(anomalies) > 0:
@@ -89,12 +95,12 @@ if plot:
     plt.figure(figsize=(10, 5))
     plt.plot(reconstruction_error, marker='o', linestyle='-', color='b')  # Plotting the line chart
     plt.axhline(y=threshold, color='r', linestyle='-') # threshold
-    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {percentile/100:.0%})')  # Title of the chart
+    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {threshold})')  # Title of the chart
     plt.title('AutoEncoder Reconstruction Error')  # Title of the chart
     plt.xlabel('Seq Index')  # X-axis label
     plt.ylabel('AE Error')  # Y-axis label
     plt.grid(True)  # Adding a grid
-    plt.savefig("train.png")  # Display the plot
+    plt.savefig("validation.png")  # Display the plot
 
 # Output the anomalies
 # anomalous_data = X_test[anomalies]
