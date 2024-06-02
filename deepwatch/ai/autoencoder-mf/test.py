@@ -17,7 +17,7 @@ df = pd.read_csv(f'./data/{test_dataset}_{test_label}_mobiflow.csv', header=0, d
 # Handle missing values
 df.fillna(0, inplace=True)
 
-sequence_length = 10
+sequence_length = 6
 encoder = Encoder()
 X_sequences = encoder.encode_mobiflow(df, sequence_length)
 
@@ -29,7 +29,7 @@ input_dim = X_test.shape[1]  # This should match the input_dim used during train
 model_path = "./data/autoencoder_model.pth"
 
 model = Autoencoder(input_dim)
-model.load_state_dict(torch.load(model_path))
+model = torch.load(model_path)['model']
 model.eval()
 print(f"Model loaded from {model_path}")
 
@@ -38,8 +38,7 @@ with torch.no_grad():
     reconstructions = model(X_test)
     reconstruction_error = torch.mean((X_test - reconstructions) ** 2, dim=1)
 
-percentile = 80
-threshold = np.percentile(reconstruction_error.numpy(), percentile)
+threshold = torch.load(model_path)['threshold']
 anomalies = reconstruction_error > threshold
 
 # ground truth
@@ -49,8 +48,11 @@ gt = {"blind dos": [10, 21, 32],
       "uplink imsi extr": list(range(42, 47)),
       "uplink dos": [71, 72],
       "bts ddos": list(range(52, 64))+list(range(88, 97))+list(range(107, 125)),
-      "null cipher": list(range(80, 84))
+      "null cipher": list(range(82, 84))
       }
+
+fn = [v for k in gt.keys() for v in gt[k] ]
+fp = []
 
 # Convert back to DataFrame
 for anomalies_idx in torch.nonzero(anomalies).squeeze():
@@ -63,9 +65,10 @@ for anomalies_idx in torch.nonzero(anomalies).squeeze():
     attack_found = False
     for attack in gt.keys():
         for attack_idx in gt[attack]:
-            if attack_idx in range(anomalies_idx, anomalies_idx + sequence_length): 
+            if anomalies_idx <= attack_idx < anomalies_idx + sequence_length:
                 attack_found = True
-                break
+                if attack_idx in fn:
+                    fn.remove(attack_idx) 
         if attack_found:
             break
     
@@ -73,8 +76,14 @@ for anomalies_idx in torch.nonzero(anomalies).squeeze():
         print(f"Attack: {attack}")
     else:
         print(f"False Positive")
+        fp.append(anomalies_idx)
 
     print()
+
+print("FN:")
+print(fn)
+print("FP:")
+print(fp)
 
 # plot graph - reconstruction err w.r.t. to each sequence
 plot = True
@@ -84,7 +93,7 @@ if plot:
     plt.figure(figsize=(10, 5))
     plt.plot(reconstruction_error, marker='o', linestyle='-', color='b')  # Plotting the line chart
     plt.axhline(y=threshold, color='r', linestyle='-') # threshold
-    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {percentile/100:.0%})')  # Title of the chart
+    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {threshold})')  # Title of the chart
     plt.xlabel('Seq Index')  # X-axis label
     plt.ylabel('AE Error')  # Y-axis label
     plt.grid(True)  # Adding a grid

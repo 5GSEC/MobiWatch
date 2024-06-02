@@ -5,5 +5,5 @@ downlink imsi: 102
 uplink imsi: 42-46
 uplink dos: 71-72
 bts ddos: 52-63, 88-96, 107-124
-null cipher: 80-83
+null cipher: 82-83
 otherwise benign
