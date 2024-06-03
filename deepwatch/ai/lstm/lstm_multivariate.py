@@ -14,11 +14,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # hyper params
 feature_size = None # will be set based on the input data
 hidden_len = 64
-batch_size = 64 # 256
+batch_size = 256
 num_layer = 1
 lr = 1e-3
 weight_decay = 1e-5
-epoches = 50
+epoches = 500
 seq_len = 5
 
 class LSTM_multivariate(nn.Module):
@@ -52,9 +52,9 @@ def get_loss_function():
     # return nn.CrossEntropyLoss()
 
 
-def train(train_data, X_train, y_train):
+def train(X_train, y_train):
     global feature_size
-    feature_size = train_data.shape[1]
+    feature_size = y_train.shape[1]
 
     model = LSTM_multivariate().to(device)
     optimizier = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -86,29 +86,31 @@ def train(train_data, X_train, y_train):
             optimizier.zero_grad()
             loss.backward()
             optimizier.step()
-            if step % 10 == 0 :
-                print('epoch:{}/{}'.format(epoch,step), '|Loss:', loss.item())
+            # if epoch % 10 == 0 :
+            #     print('epoch:{}/{}'.format(epoch,step), '|Loss:', loss.item())
+        if epoch % 10 == 0 :
+            print('epoch:{}'.format(epoch), '|Loss:', loss.item())
     
     model.eval()
     output = model(X_train)
     mse_vec = getMSEvec(output,y_train)
     rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
+    rmse_vec_unsort = rmse_vec.copy()
 
     print("max AD score",max(rmse_vec))
     thres = max(rmse_vec)
     rmse_vec.sort()
-    pctg = 0.99999
+    pctg = 0.95
     thres = rmse_vec[int(len(rmse_vec)*pctg)]
     print("thres:",thres)
-    return model, thres
+    return model, thres, rmse_vec_unsort
     
 
-@torch.no_grad()
-def test(model, thres, test_data, X_test, y_test):
+# @torch.no_grad()
+def test(model, thres, X_test, y_test):
     global feature_size
-    feature_size = test_data.shape[1]
+    feature_size = y_test.shape[1]
 
-    model = LSTM_multivariate().to(device)
     getMSEvec = nn.MSELoss(reduction='none')
 
     model.eval()
@@ -122,12 +124,14 @@ def test(model, thres, test_data, X_test, y_test):
     X_test = torch.from_numpy(X_test).type(torch.float).to(device)
     y_test = torch.from_numpy(y_test).type(torch.float).to(device)
 
-    output = model(X_test)
-    mse_vec = getMSEvec(output,y_test)
-    rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
-    rmse_vec = np.concatenate((np.asarray([0.]*(seq_len-1)),rmse_vec))
-    idx_mal = np.where(rmse_vec>thres)
-    idx_ben = np.where(rmse_vec<=thres)
+    with torch.no_grad():
+        output = model(X_test)
+        mse_vec = getMSEvec(output,y_test)
+        rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
+
+    # rmse_vec = np.concatenate((np.asarray([0.]*(seq_len-1)),rmse_vec))
+    # idx_mal = np.where(rmse_vec>thres)
+    # idx_ben = np.where(rmse_vec<=thres)
     # print(len(rmse_vec[idx_ben]),len(rmse_vec[idx_mal]))
     return rmse_vec
 
