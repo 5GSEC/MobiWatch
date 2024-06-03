@@ -10,6 +10,7 @@ from lstm_multivariate import train, test
 from utils import Normalizer, multiLSTM_seqformat
 # from timeseries_multivariate import MultiTimeseriesAID 
 import more_itertools  
+from sklearn.metrics import roc_curve, auc
 
 # train data
 train_dataset = "5g-select"
@@ -111,7 +112,7 @@ if __name__ == "__main__":
         "null cipher": list(range(82, 84))
         }
 
-    fn = [v for k in gt.keys() for v in gt[k] ]
+    fn = [v for k in gt.keys() for v in gt[k]]
     fp = []
 
     # Convert back to DataFrame

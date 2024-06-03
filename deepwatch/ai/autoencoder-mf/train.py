@@ -24,8 +24,8 @@ print(X_sequences.shape)
 # Split data into training and test sets
 seed = 2 # 42
 indices = np.arange(X_sequences.shape[0])
-# X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=0.2, random_state=seed)
-X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=0.1, random_state=seed)
+val_portion = 0.1 # size of validation set
+X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=val_portion, random_state=seed)
 
 # Convert to PyTorch tensors
 X_train = torch.tensor(X_train, dtype=torch.float32)
@@ -63,7 +63,7 @@ model_path = "./data/autoencoder_model.pth"
 with torch.no_grad():
     reconstructions = model(X_train)
     reconstruction_error = torch.mean((X_train - reconstructions) ** 2, dim=1)
-    percentile = 95
+    percentile = 99
     threshold = np.percentile(reconstruction_error.numpy(), percentile) # we assume the training set contains X% anomalous data
 
 torch.save({'model': model, "threshold": threshold}, model_path)

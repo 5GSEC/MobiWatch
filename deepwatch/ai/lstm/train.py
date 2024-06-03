@@ -32,13 +32,19 @@ for i in range(len(X_sequences)):
     split_seq = np.split(X_sequences[i], sequence_length+1)
     x_train.append(split_seq[:sequence_length])
     y_train.append(split_seq[-1])
-    # x_train.append(X_sequences[i][:per_seq_len*(sequence_length)])
-    # y_train.append(X_sequences[i][per_seq_len*(sequence_length):])
 
 x_train = np.asarray(x_train)
 y_train = np.asarray(y_train)
-print(x_train.shape)
-print(y_train.shape)
+print(x_train.shape, y_train.shape)
+
+seed = 1
+val_portion = 0.1 # size of validation set
+indices = np.arange(x_train.shape[0])
+x_train, x_val, indices_train, indices_val = train_test_split(x_train, indices, test_size=val_portion, random_state=seed)
+y_val = y_train[indices_val]
+y_train = y_train[indices_train]
+print(x_train.shape, y_train.shape)
+print(x_val.shape, y_val.shape)
 
 # Split data into training and test sets
 # seed = 30 # 42
@@ -75,6 +81,8 @@ print(y_train.shape)
 model, thres, rmse_vec = train(x_train, y_train)
 torch.save({'net':model,'thres':thres},f'./save/lstm_multivariate_{train_dataset}_{train_label}.pth.tar')    
 
+# validation
+rmse_vec = test(model, thres, x_val, y_val)
 anomalies = torch.tensor(rmse_vec > thres)
 if len(anomalies) > 0:
     for anomalies_idx in torch.nonzero(anomalies).squeeze():
@@ -95,7 +103,7 @@ if plot:
     plt.xlabel('Seq Index')  # X-axis label
     plt.ylabel('RMSE')  # Y-axis label
     plt.grid(True)  # Adding a grid
-    plt.savefig("train.png")  # Display the plot
+    plt.savefig("validation.png")  # Display the plot
 
 # normer = Normalizer(train_feat.shape[-1],online_minmax=True)
 # train_feat = normer.fit_transform(train_feat)
