@@ -24,7 +24,7 @@ print(X_sequences.shape)
 # Split data into training and test sets
 seed = 2 # 42
 indices = np.arange(X_sequences.shape[0])
-val_portion = 0.1 # size of validation set
+val_portion = 0.2 # size of validation set
 X_train, X_test, indices_train, indices_test = train_test_split(X_sequences, indices, test_size=val_portion, random_state=seed)
 
 # Convert to PyTorch tensors
@@ -65,6 +65,7 @@ with torch.no_grad():
     reconstruction_error = torch.mean((X_train - reconstructions) ** 2, dim=1)
     percentile = 99
     threshold = np.percentile(reconstruction_error.numpy(), percentile) # we assume the training set contains X% anomalous data
+    # alternative: (1) use maximum reconstruction error (2) take average
 
 torch.save({'model': model, "threshold": threshold}, model_path)
 print(f"Model saved to {model_path}")

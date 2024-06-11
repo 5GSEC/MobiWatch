@@ -18,7 +18,7 @@ batch_size = 256
 num_layer = 1
 lr = 1e-3
 weight_decay = 1e-5
-epoches = 500
+epoches = 100
 seq_len = 5
 
 class LSTM_multivariate(nn.Module):
@@ -93,17 +93,29 @@ def train(X_train, y_train):
     
     model.eval()
     output = model(X_train)
-    mse_vec = getMSEvec(output,y_train)
-    rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
-    rmse_vec_unsort = rmse_vec.copy()
 
-    print("max AD score",max(rmse_vec))
-    thres = max(rmse_vec)
-    rmse_vec.sort()
-    pctg = 0.95
-    thres = rmse_vec[int(len(rmse_vec)*pctg)]
+    with torch.no_grad():
+        mse_vec = torch.mean((output - y_train) ** 2, dim=1)
+        mse_vec_unsort = mse_vec.numpy()
+    print("max AD score",max(mse_vec))
+    thres = max(mse_vec)
+    mse_vec.sort()
+    pctg = 0.99
+    thres = mse_vec[int(len(mse_vec)*pctg)]
     print("thres:",thres)
-    return model, thres, rmse_vec_unsort
+    return model, thres, mse_vec_unsort
+
+    # mse_vec = getMSEvec(output,y_train)
+    # rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
+    # rmse_vec_unsort = rmse_vec.copy()
+
+    # print("max AD score",max(rmse_vec))
+    # thres = max(rmse_vec)
+    # rmse_vec.sort()
+    # pctg = 0.99
+    # thres = rmse_vec[int(len(rmse_vec)*pctg)]
+    # print("thres:",thres)
+    # return model, thres, rmse_vec_unsort
     
 
 # @torch.no_grad()
@@ -126,14 +138,15 @@ def test(model, thres, X_test, y_test):
 
     with torch.no_grad():
         output = model(X_test)
-        mse_vec = getMSEvec(output,y_test)
-        rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
+        # mse_vec = getMSEvec(output,y_test)
+        # rmse_vec = se2rmse(mse_vec).cpu().data.numpy()
+        mse_vec = torch.mean((output - y_test) ** 2, dim=1)
 
     # rmse_vec = np.concatenate((np.asarray([0.]*(seq_len-1)),rmse_vec))
     # idx_mal = np.where(rmse_vec>thres)
     # idx_ben = np.where(rmse_vec<=thres)
     # print(len(rmse_vec[idx_ben]),len(rmse_vec[idx_mal]))
-    return rmse_vec
+    return mse_vec # rmse_vec
 
 
 @torch.no_grad()

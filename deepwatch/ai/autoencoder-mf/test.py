@@ -99,6 +99,43 @@ if plot:
     plt.grid(True)  # Adding a grid
     plt.savefig("test.png")  # Display the plot
 
+
+# combine and print anmolous sequences
+indices = torch.nonzero(anomalies).squeeze().tolist()
+combined_ranges = []
+
+start = end = indices[0]
+
+for idx in indices[1:]:
+    if idx == end + 1:
+        end = idx
+    else:
+        combined_ranges.append([start, end])
+        start = end = idx
+
+combined_ranges.append([start, end])
+# print_features = ["rnti", "tmsi", "imsi", "msg", "cipher_alg", "int_alg", "est_cause"]
+print_features = ["rnti", "tmsi", "msg"]
+print("\n\n=====================================\n\n")
+df = df.replace('Securitymodecommand', 'NAS_Securitymodecommand')
+df = df.replace('Securitymodecomplete', 'NAS_Securitymodecomplete')
+df = df.replace('SecurityModeCommand', 'RRC_SecurityModeCommand')
+df = df.replace('SecurityModeComplete', 'RRC_SecurityModeComplete')
+for r in combined_ranges:
+    start = r[0]
+    end = r[1]
+    sequence_data = df.loc[start-sequence_length:end+sequence_length+1]
+    df_sequence = pd.DataFrame(sequence_data, columns=print_features)
+    print(df_sequence.to_string(index=False))
+    print()
+
+
+# for anomalies_idx in torch.nonzero(anomalies).squeeze():
+#     df_idx = anomalies_idx
+#     sequence_data = df.loc[df_idx:df_idx + sequence_length - 1]
+#     df_sequence = pd.DataFrame(sequence_data, columns=encoder.identifier_features + encoder.numerical_features + encoder.categorical_features)
+#     print(df_sequence)
+
 # Output the anomalies
 # anomalous_data = X_test[anomalies]
 

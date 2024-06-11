@@ -24,6 +24,7 @@ class Autoencoder(nn.Module):
                                      nn.ReLU(True),
                                      nn.Linear(int(input_dim*0.5),int(input_dim*0.25)),
                                      nn.ReLU(True),
+                                     # nn.Dropout(0.2), # add dropout after relu
                                      nn.Linear(int(input_dim*0.25),int(input_dim*0.1)))
 
         self.decoder = nn.Sequential(nn.Linear(int(input_dim*0.1),int(input_dim*0.25)),
