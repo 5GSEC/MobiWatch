@@ -45,6 +45,7 @@ RUN pip install /tmp
 
 # Deploy model files
 COPY src/ai/deeplog/save/ /tmp/
+COPY src/ai/autoencoder/data/autoencoder_model.pth /tmp/
 
 # Env - TODO- Configmap
 ENV PYTHONUNBUFFERED 1

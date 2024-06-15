@@ -22,7 +22,7 @@ from ricxappframe.xapp_frame import RMRXapp, rmr
 from .utils.constants import Constants
 from .manager import *
 from .handler import *
-from .ai.dlagent import DeepLogAgent
+from .ai.dlagent import DeepLogAgent, AutoEncoderAgent
 from mdclogpy import Level
 
 class DeepWatchXapp:
@@ -67,15 +67,25 @@ class DeepWatchXapp:
         train_dataset = "5g-select"
         train_label = "benign"
         train_ver = "v5"
-        model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
 
         # init DL agent
-        self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)
-        self.dl_agent.load_mobiflow(sdl_mgr)
-        x, y = self.dl_agent.encode_mobiflow()
-        for i in range(len(x)):
-            predict_y = self.dl_agent.predict(x[i])
-            self.dl_agent.interpret(x[i], predict_y, y[i])
+        model = "AE"
+        if model == "DeelLog":
+            model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
+            self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)
+            ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
+            x, y = self.dl_agent.encode_mobiflow()
+            for i in range(len(x)):
+                predict_y = self.dl_agent.predict(x[i])
+                self.dl_agent.interpret(x[i], predict_y, y[i])
+        elif model == "AE":
+            model_path = os.path.join(f"/tmp/autoencoder_model.pth")
+            seq_len = 6
+            self.dl_agent = AutoEncoderAgent(model_path, seq_len)
+            ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
+            seq, df = self.dl_agent.encode(ue_mf)
+            labels = self.dl_agent.predict(seq)
+            self.dl_agent.interpret(df, labels)
 
     def _register(self, rmr_xapp):
         """
