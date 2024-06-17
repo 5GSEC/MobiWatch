@@ -18,7 +18,7 @@ batch_size = 256
 num_layer = 1
 lr = 1e-3
 weight_decay = 1e-5
-epoches = 100
+epoches = 500
 seq_len = 5
 
 class LSTM_multivariate(nn.Module):
@@ -101,7 +101,7 @@ def train(X_train, y_train):
     thres = max(mse_vec)
     mse_vec.sort()
     pctg = 0.99
-    thres = mse_vec[int(len(mse_vec)*pctg)]
+    thres = mse_vec[int(len(mse_vec)*pctg)] + 0.001 # hack
     print("thres:",thres)
     return model, thres, mse_vec_unsort
 

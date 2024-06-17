@@ -91,12 +91,15 @@ if plot:
     import matplotlib.pyplot as plt
     # Creating a simple line chart
     plt.figure(figsize=(10, 5))
-    plt.plot(reconstruction_error, marker='o', linestyle='-', color='b')  # Plotting the line chart
-    plt.axhline(y=threshold, color='r', linestyle='-') # threshold
-    plt.title(f'AutoEncoder Reconstruction Error (Threshold: {threshold})')  # Title of the chart
-    plt.xlabel('Seq Index')  # X-axis label
-    plt.ylabel('AE Error')  # Y-axis label
-    plt.grid(True)  # Adding a grid
+    plt.plot(reconstruction_error, marker='o', linestyle='-', color='black', label='Reconstruction Error')  # Plotting the line chart
+    plt.axhline(y=threshold, color='r', linestyle='-', label='Threshold') # threshold
+    plt.legend(loc="upper center", fontsize=12)
+    # plt.title(f'AutoEncoder Reconstruction Error (Threshold: {threshold})')  # Title of the chart
+    plt.xlabel('Sequence Index', fontsize=14)  # X-axis label
+    # plt.ylabel('Reconstruction Error')  # Y-axis label
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    # plt.grid(True)  # Adding a grid
+    plt.tight_layout()
     plt.savefig("test.png")  # Display the plot
 
 
@@ -128,6 +131,23 @@ for r in combined_ranges:
     df_sequence = pd.DataFrame(sequence_data, columns=print_features)
     print(df_sequence.to_string(index=False))
     print()
+
+
+POS = len([v for k in gt.keys() for v in gt[k]])
+NEG = X_test.shape[0] - POS
+FP = len(fp)
+FN = len(fn)
+TP = POS - FP
+TN = NEG - FN
+# Compute precision, recall and F1-measure
+acc = 100 * (TP + TN) / (TP + TN + FP + FN)
+P = 100 * TP / (TP + FP)
+R = 100 * TP / (TP + FN)
+F1 = 2 * P * R / (P + R)
+fpr = 100 * FP / (FP + TN)
+tpr = 100 * TP / (TP + FN)
+print('false positive (FP): {}, false negative (FN): {}, Acc: {:.3f}%, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, acc, P, R, F1))
+print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
 
 
 # for anomalies_idx in torch.nonzero(anomalies).squeeze():

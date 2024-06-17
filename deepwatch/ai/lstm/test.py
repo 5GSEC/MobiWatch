@@ -146,6 +146,22 @@ if __name__ == "__main__":
     print("FP:")
     print(fp)
 
+    POS = len([v for k in gt.keys() for v in gt[k]])
+    NEG = x_test.shape[0] - POS
+    FP = len(fp)
+    FN = len(fn)
+    TP = POS - FP
+    TN = NEG - FN
+    # Compute precision, recall and F1-measure
+    acc = 100 * (TP + TN) / (TP + TN + FP + FN)
+    P = 100 * TP / (TP + FP)
+    R = 100 * TP / (TP + FN)
+    F1 = 2 * P * R / (P + R)
+    fpr = 100 * FP / (FP + TN)
+    tpr = 100 * TP / (TP + FN)
+    print('false positive (FP): {}, false negative (FN): {}, Acc: {:.3f}%, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, acc, P, R, F1))
+    print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
+
     # plot_name = "test_plot_%s_%s_%s" % (test_dataset, test_label, test_ver)
     # test_plot(test_feat, rmse_vec, thres, plot_name)
 

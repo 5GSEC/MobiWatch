@@ -38,7 +38,7 @@ y_train = np.asarray(y_train)
 print(x_train.shape, y_train.shape)
 
 seed = 1
-val_portion = 0.1 # size of validation set
+val_portion = 0.2 # size of validation set
 indices = np.arange(x_train.shape[0])
 x_train, x_val, indices_train, indices_val = train_test_split(x_train, indices, test_size=val_portion, random_state=seed)
 y_val = y_train[indices_val]
@@ -91,6 +91,20 @@ if len(anomalies) > 0:
         df_sequence = pd.DataFrame(sequence_data, columns=encoder.identifier_features + encoder.numerical_features + encoder.categorical_features)
         print(df_sequence)
         print()
+    
+    FP = len(torch.nonzero(anomalies).squeeze())
+    FN = 0
+    TP = x_val.shape[0] - FP
+    TN = 0
+    # Compute precision, recall and F1-measure
+    acc = 100 * (TP + TN) / (TP + TN + FP + FN)
+    P = 100 * TP / (TP + FP)
+    R = 100 * TP / (TP + FN)
+    F1 = 2 * P * R / (P + R)
+    fpr = 100 * FP / (FP + TN)
+    tpr = 100 * TP / (TP + FN)
+    print('false positive (FP): {}, false negative (FN): {}, Acc: {:.3f}%, Precision: {:.3f}%, Recall: {:.3f}%, F1-measure: {:.3f}%'.format(FP, FN, acc, P, R, F1))
+    print('false positive rate: {:.3f}%, true positive rate: {:.3f}%'.format(fpr, tpr))
 
 plot = True
 if plot:
