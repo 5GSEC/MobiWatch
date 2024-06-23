@@ -84,8 +84,9 @@ class DeepWatchXapp:
             self.dl_agent = AutoEncoderAgent(model_path, seq_len)
             ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
             seq, df = self.dl_agent.encode(ue_mf)
-            labels = self.dl_agent.predict(seq)
-            self.dl_agent.interpret(df, labels)
+            if seq is not None and len(seq) > 0:
+                labels = self.dl_agent.predict(seq)
+                self.dl_agent.interpret(df, labels)
 
     def _register(self, rmr_xapp):
         """

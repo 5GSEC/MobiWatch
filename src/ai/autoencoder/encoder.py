@@ -25,6 +25,8 @@ class Encoder:
         num_sequences = df.shape[0] - sequence_length + 1
         X_sequences = []
         for i in range(num_sequences):
+            if i+sequence_length > df.shape[0]:
+                break
             seq = df[i:i + sequence_length]
             X_sequences.append(self.encode_sequence(seq, sequence_length))
 

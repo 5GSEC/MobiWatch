@@ -190,7 +190,16 @@ class AutoEncoderAgent(DLAgent):
             csv_data = csv_data + "\n" + v
         
         df = pd.read_csv(StringIO(csv_data), delimiter=delimiter)
-        X_sequences = self.encoder.encode_mobiflow(df, self.sequence_length)
+
+        df = df[(df["sec_state"]<1) | (df["msg"]=="SecurityModeComplete")] # filter messages after encrpytion 
+        df.reset_index(drop=True, inplace=True) # reset index
+
+        if len(df) > self.sequence_length:
+            X_sequences = self.encoder.encode_mobiflow(df, self.sequence_length)
+        else:
+            logging.error("Empty data frame, insufficient data")
+            X_sequences = []
+
         return X_sequences, df
 
     def predict(self, seq: np.array) -> list:
