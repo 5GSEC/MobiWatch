@@ -5,8 +5,8 @@
         {
             "name": "deepwatch-xapp",
             "image": {
-                "registry": "5gsec.se-ran.org:10004",
-                "name": "xapp/deepwatch-xapp",
+                "registry": "127.0.0.1:5000",
+                "name": "deepwatch-xapp",
                 "tag": "0.0.1"
             }
         }
