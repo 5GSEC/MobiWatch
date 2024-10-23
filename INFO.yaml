@@ -1,5 +1,5 @@
 ---
-project: 'deepwatch-xapp'
+project: 'mobiwatch-xapp'
 project_creation_date: '2024-3-18'
 project_category: ''
 lifecycle_state: 'Incubation'
@@ -12,14 +12,14 @@ project_lead: &oran_ric_app_se_ran
 primary_contact: *oran_ric_app_se_ran
 issue_tracking:
     type: 'Github'
-    url: 'https://github.com/5GSEC/5G-DeepWatch/issues'
+    url: 'https://github.com/5GSEC/MobiWatch/issues'
     key: 'MobiFlow-Auditor'
 mailing_list:
     type: 'groups.io'
     url: 'https://lists.o-ran-sc.org/g/main'
     tag: '[]'
 repositories:
-    - 5GSEC/5G-DeepWatch
+    - 5GSEC/MobiWatch
 committers:
     - <<: *oran_ric_app_se_ran
     - name: 'Haohuang Wen'

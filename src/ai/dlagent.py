@@ -28,7 +28,7 @@ class DLAgent(ABC):
 
     def __init__(self):
         # create console handler with a higher log level
-        self.logger = logging.getLogger("5G-DeepWatch")
+        self.logger = logging.getLogger("mobiwatch")
         self.logger.setLevel(logging.DEBUG)
         self.logger.propagate = False  # avoid double printing
         ch = logging.StreamHandler()

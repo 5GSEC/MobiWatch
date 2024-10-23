@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo -E dms_cli uninstall deepwatch-xapp ricxapp
+sudo -E dms_cli uninstall mobiwatch-xapp ricxapp

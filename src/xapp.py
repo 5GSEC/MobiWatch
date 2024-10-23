@@ -25,10 +25,10 @@ from .handler import *
 from .ai.dlagent import DeepLogAgent, AutoEncoderAgent
 from mdclogpy import Level
 
-class DeepWatchXapp:
+class MobiWatchXapp:
 
     __XAPP_CONFIG_PATH = getenv("CONFIG_FILE", default="/tmp/init/config-file.json")
-    __XAPP_NAME = "deepwatch-xapp"
+    __XAPP_NAME = "mobiwatch-xapp"
     __XAPP_VERSION = "0.0.1"
     __XAPP_NAME_SPACE = "ricxapp"
     __PLT_NAME_SPACE = "ricplt"
@@ -73,8 +73,11 @@ class DeepWatchXapp:
         if model == "DeelLog":
             model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
             self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)
+            # load mobiflow data
             ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
-            x, y = self.dl_agent.encode_mobiflow()
+            if len(ue_mf) <= 0:
+                return
+            x, y = self.dl_agent.encode_mobiflow(ue_mf)
             for i in range(len(x)):
                 predict_y = self.dl_agent.predict(x[i])
                 self.dl_agent.interpret(x[i], predict_y, y[i])
@@ -82,7 +85,10 @@ class DeepWatchXapp:
             model_path = os.path.join(f"/tmp/autoencoder_model.pth")
             seq_len = 6
             self.dl_agent = AutoEncoderAgent(model_path, seq_len)
+            # load mobiflow data
             ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
+            if len(ue_mf) <= 0:
+                return
             seq, df = self.dl_agent.encode(ue_mf)
             if seq is not None and len(seq) > 0:
                 labels = self.dl_agent.predict(seq)

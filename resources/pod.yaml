@@ -19,13 +19,13 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: deepwatch-xapp
+  name: mobiwatch-xapp
   labels:
     role: xapp
 spec:
   containers:
-    - name: deepwatch-xapp
-      image: deepwatch-xapp:0.0.1
+    - name: mobiwatch-xapp
+      image: mobiwatch-xapp:0.0.1
       ports:
         - name: rmr
           containerPort: 4560

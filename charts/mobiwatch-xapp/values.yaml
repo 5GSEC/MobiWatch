@@ -1,0 +1,118 @@
+################################################################################
+#   Copyright (c) 2019 AT&T Intellectual Property.                             #
+#                                                                              #
+#   Licensed under the Apache License, Version 2.0 (the "License");            #
+#   you may not use this file except in compliance with the License.           #
+#   You may obtain a copy of the License at                                    #
+#                                                                              #
+#       http://www.apache.org/licenses/LICENSE-2.0                             #
+#                                                                              #
+#   Unless required by applicable law or agreed to in writing, software        #
+#   distributed under the License is distributed on an "AS IS" BASIS,          #
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+#   See the License for the specific language governing permissions and        #
+#   limitations under the License.                                             #
+################################################################################'
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+ricplt:
+# This section is reserved for values imported from RIC Platform charts
+  dbaasService: "service-ricplt-dbaas-tcp.ricplt.svc.cluster.local"
+  metricsdbService: "service-metricsdb.ricplt.svc.cluster.local"
+  pltIngressUrl: "ricplt-entry"
+  xappIngressUrl: "ricxapp-entry"
+
+  appmgrRMRService: "service-ricplt-appmgr-rmr.ricplt.svc.cluster.local"
+  e2mgrRMRService: "service-ricplt-e2mgr-rmr.ricplt.svc.cluster.local"
+  e2termRMRService: "service-ricplt-e2term-rmr.ricplt.svc.cluster.local"
+  rtmgrRMRService: "service-ricplt-rtmgr-rmr.ricplt.svc.cluster.local"
+  a1mediatorRMRService: "service-ricplt-a1mediator-rmr.ricplt.svc.cluster.local"
+
+# Location of the xApp config files injected from the xApp descriptor
+appconfig:
+    path: /opt/ric/config
+
+# Location of volume based on HostPath of type Directory
+storage:
+    mountPath: /home/kpm/storage
+
+# Number of replica
+replicaCount: 1
+
+# Image pulling policy
+image_pull_policy: IfNotPresent
+
+# Environment variables that will be injected
+appenv: {}
+
+# Liveness probe definition. If empty, liveness probe will be disabled
+livenessProbe: {}
+
+# Readiness probe definition. If empty, readiness probe will be disabled
+readinessProbe: {}
+
+# Instance name. If empty, chart name will be used
+name: {}
+
+# Full instance name. If empty, full name will be constructed from name
+fullname: {}
+
+###############    The following are from the xApp descriptor     ###############
+containers:
+- image:
+    name: mobiwatch-xapp
+    registry: 127.0.0.1:5000
+    tag: 0.0.1
+  name: mobiwatch-xapp
+controls:
+  fileStrorage: false
+db:
+  waitForSdl: false
+messaging:
+  ports:
+  - container: mobiwatch-xapp
+    description: http service
+    name: http
+    port: 8080
+  - container: mobiwatch-xapp
+    description: rmr route port for the xApp
+    name: rmrroute
+    port: 4561
+  - container: mobiwatch-xapp
+    description: rmr data port for the xApp
+    mtypes:
+    - id: 55555
+      name: TESTNAME1
+    - id: 55556
+      name: TESTNAME2
+    name: rmrdata
+    policies:
+    - 1
+    port: 4560
+    rxMessages:
+    - RIC_SUB_RESP
+    - RIC_SUB_FAILURE
+    - RIC_SUB_DEL_RESP
+    - RIC_INDICATION
+    txMessages:
+    - RIC_SUB_REQ
+    - RIC_SUB_DEL_REQ
+    - RIC_SGNB_ADDITION_REQ
+    - RIC_SGNB_ADDITION_ACK
+name: mobiwatch-xapp
+rmr:
+  maxSize: 2072
+  numWorkers: 1
+  policies:
+  - 1
+  protPort: tcp:4560
+  rxMessages:
+  - RIC_SUB_RESP
+  - A1_POLICY_REQ
+  - RIC_HEALTH_CHECK_REQ
+  txMessages:
+  - RIC_SUB_REQ
+  - A1_POLICY_RESP
+  - A1_POLICY_QUERY
+  - RIC_HEALTH_CHECK_RESP
+version: 0.0.1

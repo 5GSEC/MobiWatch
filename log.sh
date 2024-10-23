@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo kubectl logs $(sudo kubectl get pods -o name -n ricxapp | grep "deepwatch-xapp") -n ricxapp -f
+sudo kubectl logs $(sudo kubectl get pods -o name -n ricxapp | grep "mobiwatch-xapp") -n ricxapp -f

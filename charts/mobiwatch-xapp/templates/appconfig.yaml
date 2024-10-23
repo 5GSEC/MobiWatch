@@ -1,0 +1,544 @@
+################################################################################
+#   Copyright (c) 2019 AT&T Intellectual Property.                             #
+#                                                                              #
+#   Licensed under the Apache License, Version 2.0 (the "License");            #
+#   you may not use this file except in compliance with the License.           #
+#   You may obtain a copy of the License at                                    #
+#                                                                              #
+#       http://www.apache.org/licenses/LICENSE-2.0                             #
+#                                                                              #
+#   Unless required by applicable law or agreed to in writing, software        #
+#   distributed under the License is distributed on an "AS IS" BASIS,          #
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+#   See the License for the specific language governing permissions and        #
+#   limitations under the License.                                             #
+################################################################################'
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ricxapp.configmapname" . }}-appconfig
+data:
+  config-file.json: |
+    {
+        "name": {{ index .Values "name" | toJson }},
+        "version": {{ index .Values "version" | toJson }},
+        "containers": {{ index .Values "containers" | toJson }},
+        "messaging": {
+            "ports": {{ index .Values "messaging" "ports" | toJson }}
+        },
+        "rmr": {
+            "protPort": {{ index .Values "rmr" "protPort" | toJson }},
+            "maxSize": {{ index .Values "rmr" "maxSize" | toJson }},
+            "numWorkers": {{ index .Values "rmr" "numWorkers" | toJson }},
+            "txMessages": {{ index .Values "rmr" "txMessages" | toJson }},
+            "rxMessages": {{ index .Values "rmr" "rxMessages" | toJson }},
+            "policies": {{ index .Values "rmr" "policies" | toJson }}
+        },
+        "controls": {
+            "fileStrorage": {{ index .Values "controls" "fileStrorage" | toJson }}
+        },
+        "db": {
+            "waitForSdl": {{ index .Values "db" "waitForSdl" | toJson }}
+        }
+    }
+  schema.json: |
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "http://o-ran-sc.org/xapp_root.json",
+        "type": "object",
+        "title": "The xApp Root Schema",
+        "properties": {
+            "name": {
+                "$id": "#/properties/name",
+                "type": "string",
+                "title": "The xApp Name",
+                "default": "xapp",
+                "examples": [
+                    "example_xapp"
+                ]
+            },
+            "version": {
+                "$id": "#/properties/version",
+                "type": "string",
+                "title": "The xApp version",
+                "default": "1.0.0",
+                "examples": [
+                    "1.0.0"
+                ],
+                "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+            },
+            "annotations": {
+                "$id": "#/properties/annotation",
+                "type": "object",
+                "title": "The k8s pod annotation",
+                "additionalProperties": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    ]
+                }
+            },
+            "containers": {
+                "$id": "#/properties/containers",
+                "type": "array",
+                "title": "The Container Schema",
+                "items": {
+                    "$id": "#/properties/containers/items",
+                    "type": "object",
+                    "title": "The Container Items Schema",
+                    "required": [
+                        "name",
+                        "image"
+                    ],
+                    "properties": {
+                        "name": {
+                            "$id": "#/properties/containers/items/properties/name",
+                            "type": "string",
+                            "title": "The xApp Container Name",
+                            "default": "xapp",
+                            "examples": [
+                                "xapp"
+                            ]
+                        },
+                        "image": {
+                            "$id": "#/properties/containers/items/properties/image",
+                            "type": "object",
+                            "title": "The Container Image",
+                            "required": [
+                                "registry",
+                                "name",
+                                "tag"
+                            ],
+                            "properties": {
+                                "registry": {
+                                    "$id": "#/properties/containers/items/properties/image/properties/registry",
+                                    "type": "string",
+                                    "title": "The xApp Image Registry",
+                                    "default": "nexus3.o-ran-sc.org:10002",
+                                    "examples": [
+                                        "nexus3.o-ran-sc.org:10002"
+                                    ],
+                                    "pattern": "^([A-Za-z0-9\\.-]{1,}\\.[A-Za-z]{1,}|((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))(?:\\:\\d+)?$"
+                                },
+                                "name": {
+                                    "$id": "#/properties/containers/items/properties/image/properties/name",
+                                    "type": "string",
+                                    "title": "The xApp Image Name",
+                                    "default": "xapp",
+                                    "examples": [
+                                        "xapp"
+                                    ]
+                                },
+                                "tag": {
+                                    "$id": "#/properties/containers/items/properties/image/properties/tag",
+                                    "type": "string",
+                                    "title": "The xApp Image Tag",
+                                    "default": "latest",
+                                    "examples": [
+                                        "latest"
+                                    ]
+                                }
+                            }
+                        },
+                        "command": {
+                            "$id": "#/properties/containers/items/properties/command",
+                            "type": "array",
+                            "items": [
+                                {
+                                    "$id": "#/properties/containers/items/properties/command/item",
+                                    "type": "string",
+                                    "title": "The Command Item",
+                                    "default": "/bin/sh",
+                                    "examples": [
+                                        "/bin/sh"
+                                    ]
+                                }
+                            ]
+                        },
+                        "args": {
+                            "$id": "#/properties/containers/items/properties/args",
+                            "type": "array",
+                            "items": [
+                                {
+                                    "$id": "#/properties/containers/items/properties/args/item",
+                                    "type": "string",
+                                    "title": "The Command Arguement Item",
+                                    "default": "-c",
+                                    "examples": [
+                                        "-c"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "livenessProbe": {
+                "$id": "#/properties/livenessprobe",
+                "type": "object",
+                "title": "The Liveness Probe Definition",
+                "properties": {
+                    "exec": {
+                        "$id": "#/properties/livenessprobe/exec",
+                        "type": "object",
+                        "title": "Script of Liveness Probe",
+                        "properties": {
+                            "command": {
+                                "$id": "#/properties/livenessprobe/exec/command",
+                                "type": "array",
+                                "items": [
+                                    {
+                                        "$id": "#/properties/livenessprobe/exec/command/item",
+                                        "type": "string",
+                                        "title": "The Command Item",
+                                        "default": "/bin/sh",
+                                        "examples": [
+                                            "/bin/sh"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "command"
+                        ]
+                    },
+                    "httpGet": {
+                        "$id": "#/properties/livenessprobe/httpget",
+                        "type": "object",
+                        "title": "Http of Liveness Probe",
+                        "properties": {
+                            "path": {
+                                "$id": "#/properties/livenessprobe/httpget/path",
+                                "type": "string",
+                                "title": "The Path of Http Liveness Probe",
+                                "default": "/health",
+                                "examples": [
+                                    "/health"
+                                ]
+                            },
+                            "port": {
+                                "$id": "#/properties/livenessprobe/httpget/port",
+                                "type": "integer",
+                                "title": "The Port of Http Liveness Probe",
+                                "default": 80,
+                                "examples": [
+                                    80
+                                ]
+                            }
+                        },
+                        "required": [
+                            "path",
+                            "port"
+                        ]
+                    },
+                    "initialDelaySeconds": {
+                        "$id": "#/properties/livenessprobe/initialdelayseconds",
+                        "type": "integer",
+                        "title": "Initial Delay of Liveness Probe",
+                        "default": 5,
+                        "examples": [
+                            5
+                        ]
+                    },
+                    "periodSeconds": {
+                        "$id": "#/properties/livenessprobe/periodseconds",
+                        "type": "integer",
+                        "title": "Period of Liveness Probe",
+                        "default": 15,
+                        "examples": [
+                            15
+                        ]
+                    }
+                },
+                "oneOf": [
+                    {
+                        "$id": "#/properties/livenessprobe/oneof/exec",
+                        "required": [
+                            "exec",
+                            "initialDelaySeconds",
+                            "periodSeconds"
+                        ]
+                    },
+                    {
+                        "$id": "#/properties/livenessprobe/oneof/httpget",
+                        "required": [
+                            "httpGet",
+                            "initialDelaySeconds",
+                            "periodSeconds"
+                        ]
+                    }
+                ]
+            },
+            "readinessProbe": {
+                "$id": "#/properties/readinessprobe",
+                "type": "object",
+                "title": "The Readiness Probe Definition",
+                "properties": {
+                    "exec": {
+                        "$id": "#/properties/readinessprobe/exec",
+                        "type": "object",
+                        "title": "Script of Readiness Probe",
+                        "properties": {
+                            "command": {
+                                "$id": "#/properties/readinessprobe/exec/command",
+                                "type": "array",
+                                "items": [
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "command"
+                        ]
+                    },
+                    "httpGet": {
+                        "$id": "#/properties/readinessprobe/httpget",
+                        "type": "object",
+                        "title": "Http of Readiness Probe",
+                        "properties": {
+                            "path": {
+                                "$id": "#/properties/readinessprobe/httpget/path",
+                                "type": "string",
+                                "title": "The Path of Http Readiness Probe",
+                                "default": "/health",
+                                "examples": [
+                                    "/health"
+                                ]
+                            },
+                            "port": {
+                                "$id": "#/properties/readinessprobe/httpget/port",
+                                "type": "integer",
+                                "title": "The Port of Http Readiness Probe",
+                                "default": 80,
+                                "examples": [
+                                    80
+                                ]
+                            }
+                        },
+                        "required": [
+                            "path",
+                            "port"
+                        ]
+                    },
+                    "initialDelaySeconds": {
+                        "$id": "#/properties/readinessprobe/initialdelayseconds",
+                        "type": "integer",
+                        "title": "Initial Delay of Readiness Probe",
+                        "default": 5,
+                        "examples": [
+                            5
+                        ]
+                    },
+                    "periodSeconds": {
+                        "$id": "#/properties/readinessprobe/periodseconds",
+                        "type": "integer",
+                        "title": "Period of Readiness Probe",
+                        "default": 15,
+                        "examples": [
+                            15
+                        ]
+                    }
+                },
+                "oneOf": [
+                    {
+                        "$id": "#/properties/readinessprobe/oneof/exec",
+                        "required": [
+                            "exec",
+                            "initialDelaySeconds",
+                            "periodSeconds"
+                        ]
+                    },
+                    {
+                        "$id": "#/properties/readinessprobe/oneof/httpget",
+                        "required": [
+                            "httpGet",
+                            "initialDelaySeconds",
+                            "periodSeconds"
+                        ]
+                    }
+                ]
+            },
+            "messaging": {
+                "type": "object",
+                "$id": "#/properties/messaging",
+                "title": "The Messaging Schema",
+                "properties": {
+                    "ports": {
+                        "$id": "#/properties/messaging/ports",
+                        "type": "array",
+                        "title": "The Ports for Messaging",
+                        "items": {
+                            "$id": "#/properties/messaging/ports/items",
+                            "type": "object",
+                            "title": "The Item of Port",
+                            "required": [
+                                "name",
+                                "container",
+                                "port"
+                            ],
+                            "dependencies": {
+                                "txMessages": [
+                                    "rxMessages",
+                                    "policies"
+                                ],
+                                "rxMessages": [
+                                    "txMessages",
+                                    "policies"
+                                ],
+                                "policies": [
+                                    "rxMessages",
+                                    "txMessages"
+                                ]
+                            },
+                            "properties": {
+                                "name": {
+                                    "$id": "#/properties/messaging/ports/items/name",
+                                    "type": "string",
+                                    "title": "The Name of the Port",
+                                    "default": "App",
+                                    "examples": [
+                                        "App"
+                                    ]
+                                },
+                                "container": {
+                                    "$id": "#/properties/messaging/ports/items/container",
+                                    "type": "string",
+                                    "title": "The Container of the Port",
+                                    "default": "xapp",
+                                    "examples": [
+                                        "xapp"
+                                    ]
+                                },
+                                "port": {
+                                    "$id": "#/properties/messaging/ports/items/port",
+                                    "type": "integer",
+                                    "title": "The Port Number",
+                                    "default": 8080,
+                                    "examples": [
+                                        8080
+                                    ]
+                                },
+                                "description": {
+                                    "$id": "#/properties/messaging/ports/items/description",
+                                    "type": "string",
+                                    "title": "The description for the port",
+                                    "default": "port description",
+                                    "examples": [
+                                        "port description"
+                                    ]
+                                },
+                                "txMessages": {
+                                    "$id": "#/properties/messaging/ports/items/txmessages",
+                                    "type": "array",
+                                    "title": "The txMessage Types",
+                                    "items": {
+                                        "$id": "#/properties/messaging/ports/items//txmessages/item",
+                                        "type": "string",
+                                        "title": "The txMessage Types Item",
+                                        "default": "RIC_SUB",
+                                        "examples": [
+                                            "RIC_SUB"
+                                        ]
+                                    }
+                                },
+                                "rxMessages": {
+                                    "$id": "#/properties/messaging/ports/items/rxmessages",
+                                    "type": "array",
+                                    "title": "The rxMessage Types",
+                                    "items": {
+                                        "$id": "#/properties/messaging/ports/items/rxmessages/item",
+                                        "type": "string",
+                                        "title": "The rxMessage Types Item",
+                                        "default": "RIC_SUB",
+                                        "examples": [
+                                            "RIC_SUB"
+                                        ]
+                                    }
+                                },
+                                "policies": {
+                                    "$id": "#/properties/messaging/ports/items/policies",
+                                    "type": "array",
+                                    "title": "The Policies Types",
+                                    "items": {
+                                        "$id": "#/properties/messaging/ports/items/policies/item",
+                                        "type": "integer",
+                                        "title": "The Policy Types Item",
+                                        "default": 1,
+                                        "examples": [
+                                            1
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "ports"
+                ]
+            },
+            "metrics": {
+                "type": "object",
+                "$id": "#/properties/metrics",
+                "title": "The Metrics Schema",
+                "items": {
+                    "$id": "#/properties/metrics/items",
+                    "type": "object",
+                    "title": "The Metrics Items Schema",
+                    "required": [
+                        "objectName",
+                        "objectInstance",
+                        "name",
+                        "type",
+                        "description"
+                    ],
+                    "properties": {
+                        "objectName": {
+                            "$id": "#/properties/metrics/items/objectname",
+                            "type": "string",
+                            "title": "The Object Name"
+                        },
+                        "objectInstance": {
+                            "$id": "#/properties/metrics/items/objectinstance",
+                            "type": "string",
+                            "title": "The Object Instance"
+                        },
+                        "name": {
+                            "$id": "#/properties/metrics/items/name",
+                            "type": "string",
+                            "title": "The Object Name"
+                        },
+                        "type": {
+                            "$id": "#/properties/metrics/items/type",
+                            "type": "string",
+                            "title": "The Object Type"
+                        },
+                        "description": {
+                            "$id": "#/properties/metrics/items/description",
+                            "type": "string",
+                            "title": "The Object Description"
+                        }
+                    }
+                }
+            },
+            "controls": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$id": "#/controls",
+                "type": "object",
+                "title": "Controls Section Schema",
+                "required": [],
+                "properties": {}
+            }
+        }
+    }

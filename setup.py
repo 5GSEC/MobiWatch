@@ -24,7 +24,7 @@ def read(fname):
 
 
 setup(
-    name='deepwatch-xapp',
+    name='mobiwatch-xapp',
     version='0.0.1',
     packages=find_packages(),
     url='https://5gsec.com',

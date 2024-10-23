@@ -1,12 +1,12 @@
 {
-    "name": "deepwatch-xapp",
+    "name": "mobiwatch-xapp",
     "version": "0.0.1",
     "containers": [
         {
-            "name": "deepwatch-xapp",
+            "name": "mobiwatch-xapp",
             "image": {
                 "registry": "127.0.0.1:5000",
-                "name": "deepwatch-xapp",
+                "name": "mobiwatch-xapp",
                 "tag": "0.0.1"
             }
         }
@@ -15,19 +15,19 @@
         "ports": [
             {
                 "name": "http",
-                "container": "deepwatch-xapp",
+                "container": "mobiwatch-xapp",
                 "port": 8080,
                 "description": "http service"
             },
             {
                 "name": "rmrroute",
-                "container": "deepwatch-xapp",
+                "container": "mobiwatch-xapp",
                 "port": 4561,
                 "description": "rmr route port for the xApp"
             },
             {
                 "name": "rmrdata",
-                "container": "deepwatch-xapp",
+                "container": "mobiwatch-xapp",
                 "port": 4560,
                 "rxMessages": ["RIC_SUB_RESP", "RIC_SUB_FAILURE", "RIC_SUB_DEL_RESP", "RIC_INDICATION"],
                 "txMessages": ["RIC_SUB_REQ", "RIC_SUB_DEL_REQ", "RIC_SGNB_ADDITION_REQ", "RIC_SGNB_ADDITION_ACK"],
