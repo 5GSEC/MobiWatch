@@ -27,7 +27,7 @@ Before deploying the xApp, make sure the OSC nRT-RIC is deployed by following th
 
 ### MobiFlow Auditor xApp
 
-MobiWatch directly acquires security telemetry from the SDL generated from the [MobiFlow Auditor xApp](https://github.com/5GSEC/MobiFlow-Auditor) xApp. Following the instructions to prepare the environment and collect data from a 5G network.
+MobiWatch directly acquires security telemetry from the SDL generated from the [MobiFlow Auditor xApp](https://github.com/5GSEC/MobiFlow-Auditor) xApp. Follow the instructions to prepare the environment and collect data from a 5G network.
 
 
 ## Build
