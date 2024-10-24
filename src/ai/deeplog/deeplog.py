@@ -53,8 +53,7 @@ def train_deeplog(input_seq, output_label, num_classes, window_size):
         train_loss = 0
         for step, (seq, label) in enumerate(dataloader):
             seq = seq.clone().detach().view(-1, window_size).to(device)
-            seq = F.one_hot(seq,
-                            num_classes=num_classes).float()  # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
+            seq = F.one_hot(seq, num_classes=num_classes).float()  # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
             output = model(seq)
 
             loss = criterion(output, label.to(device))

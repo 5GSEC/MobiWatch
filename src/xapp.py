@@ -64,7 +64,7 @@ class MobiWatchXapp:
         self._register(rmr_xapp)
 
         # model path
-        train_dataset = "5g-select"
+        train_dataset = "5g-mobiwatch"
         train_label = "benign"
         train_ver = "v5"
 
