@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch import nn
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from encoding import nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR
+from .encoding import nas_emm_code_NR, rrc_dl_ccch_code_NR, rrc_dl_dcch_code_NR, rrc_ul_ccch_code_NR, rrc_ul_dcch_code_NR
 
 class Encoder:
     def __init__(self):

@@ -16,7 +16,7 @@ delimeter = ";"
 
 # Step 1: Load and preprocess data
 data_folder = "../../../dataset/mobiflow"
-df = pd.read_csv(f'{data_folder}/{train_dataset}_{train_label}_mobiflow.csv', header=0, delimiter=delimeter)
+df = pd.read_csv(f'{data_folder}/{test_dataset}_{test_label}_mobiflow.csv', header=0, delimiter=delimeter)
 # Handle missing values
 df.fillna(0, inplace=True)
 
