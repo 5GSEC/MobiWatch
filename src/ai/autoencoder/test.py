@@ -6,14 +6,17 @@ from model import Autoencoder
 from encoder import Encoder
 
 # Data Preparation
-train_dataset = "5g-select"
+train_dataset = "5g-mobiwatch"
 train_label = "benign"
 
-test_dataset = "5g-colosseum-2"
+test_dataset = "5g-mobiwatch"
 test_label = "abnormal"
 
+delimeter = ";"
+
 # Step 1: Load and preprocess data
-df = pd.read_csv(f'./data/{test_dataset}_{test_label}_mobiflow.csv', header=0, delimiter=";")
+data_folder = "../../../dataset/mobiflow"
+df = pd.read_csv(f'{data_folder}/{train_dataset}_{train_label}_mobiflow.csv', header=0, delimiter=delimeter)
 # Handle missing values
 df.fillna(0, inplace=True)
 

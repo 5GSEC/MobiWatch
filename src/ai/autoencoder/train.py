@@ -8,11 +8,13 @@ from torch.utils.data import DataLoader, TensorDataset
 from model import Autoencoder
 from encoder import Encoder
 
-train_dataset = "5g-select"
+train_dataset = "5g-mobiwatch"
 train_label = "benign"
+delimeter = ";"
 
 # Step 1: Load and preprocess data
-df = pd.read_csv(f'./data/{train_dataset}_{train_label}_mobiflow.csv', header=0, delimiter=";")
+data_folder = "../../../dataset/mobiflow"
+df = pd.read_csv(f'{data_folder}/{train_dataset}_{train_label}_mobiflow.csv', header=0, delimiter=delimeter)
 # Handle missing values
 df.fillna(0, inplace=True)
 

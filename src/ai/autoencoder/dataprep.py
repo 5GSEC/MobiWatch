@@ -6,9 +6,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import json
 
-
+# pcap ==> mobiflow
 class DataLoader:
     def __init__(self):
+        self.dataset_5g_benign = "../../dataset/phoenix"
+        self.dataset_5g_attack = "/home/wen.423/Desktop/5g/dataset/phoenix"
+
+        self.dataset_phoenix = "/home/wen.423/Desktop/5g/dataset/phoenix"
         self.dataset_phoenix = "/home/wen.423/Desktop/5g/dataset/phoenix"
         self.dataset_5g_spector = "/home/wen.423/Desktop/5g/dataset/5g-spector"
         self.dataset_mobileinsight = "/home/wen.423/Desktop/5g/mobileinsight-core/examples/jsonlogs"
@@ -175,6 +179,9 @@ dl = DataLoader()
 # dl.load_data("mobileinsight-all", False, ver)
 # dl.load_data("5g-colosseum", True, ver)
 # dl.load_data("5g-colosseum", False, ver)
-dl.load_data("5g-select", False, ver)
-dl.load_data("5g-colosseum-2", True, ver)
+# dl.load_data("5g-select", False, ver)
+# dl.load_data("5g-colosseum-2", True, ver)
 # dl.load_data("5g-colosseum-2", False, ver)
+
+dl.load_data("5g-benign", False, ver)
+dl.load_data("5g-attack", True, ver)
