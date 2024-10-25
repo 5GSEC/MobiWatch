@@ -69,7 +69,7 @@ class MobiWatchXapp:
         train_ver = "v5"
 
         # init DL agent
-        model = "lstm"
+        model = "AE"
         # if model == "DeelLog":
         #     model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
         #     self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)

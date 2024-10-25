@@ -122,7 +122,7 @@ Datasets used for training the DL model are available in this [folder](./dataset
 
 ## Model Training
 
-MobiWatch has pre-trained DL models on benign layer-3 5G network traffic, including a vanilla [Autoencoder](./src/ai/autoencoder/model.py) model and a sequential [LSTM](./src/ai/deeplog/deeplog.py) model implemented by the [DeepLog](https://dl.acm.org/doi/pdf/10.1145/3133956.3134015) paper (CCS'17) and this [code repository](https://github.com/wuyifan18/DeepLog). The pre-trained models will be loaded into the xApp container.
+MobiWatch has pre-trained DL models on benign layer-3 5G network traffic, including a vanilla [Autoencoder](./src/ai/autoencoder/model.py) model and a multivariate [LSTM](./src/ai/lstm/lstm_multivariate.py) model implemented by the [DeepAID](https://github.com/dongtsi/DeepAID) paper. The pre-trained models will be loaded into the xApp container.
 
 
 ## Publication
