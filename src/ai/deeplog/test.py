@@ -1,5 +1,4 @@
-from .ai.deeplog.msgseq import MsgSeq
-from .ai.dlagent import DeepLogAgent, AutoEncoderAgent, LSTMAgent
+from msgseq import MsgSeq
 
 # init DL agent
 mf_trace = [
@@ -35,18 +34,7 @@ mf_trace = [
 
 
 # AE
-# dl_agent = AutoEncoderAgent(model_path="./src/ai/autoencoder/data/autoencoder_model.pth", sequence_length=6)
-# mf_dict = {}
-# for i in range(len(mf_trace)):
-#     mf_dict[i] = mf_trace[i]
-# seq, df = dl_agent.encode(mf_dict)
-# print(seq.shape)
-# labels = dl_agent.predict(seq)
-# print(labels)
-# dl_agent.interpret(df, labels)
-
-# LSTM
-dl_agent = LSTMAgent(model_path="./src/ai/lstm/save/lstm_multivariate_5g-mobiwatch_benign.pth.tar", sequence_length=6)
+dl_agent = AutoEncoderAgent(model_path="/home/wen.423/Desktop/5g/osc/MobiWatch/src/ai/autoencoder/data/autoencoder_model.pth", sequence_length=6)
 mf_dict = {}
 for i in range(len(mf_trace)):
     mf_dict[i] = mf_trace[i]

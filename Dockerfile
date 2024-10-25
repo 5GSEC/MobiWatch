@@ -38,14 +38,15 @@ RUN pip install torch==2.3.1+cpu -f https://download.pytorch.org/whl/torch_stabl
 # Install
 COPY setup.py /tmp
 COPY README.md /tmp
-COPY LICENSE.txt /tmp/
+COPY LICENSE /tmp/
 COPY src/ /tmp/src
 COPY init/ /tmp/init
 RUN pip install /tmp
 
 # Deploy model files
-COPY src/ai/deeplog/save/ /tmp/
+# COPY src/ai/deeplog/save/ /tmp/
 COPY src/ai/autoencoder/data/autoencoder_model.pth /tmp/
+COPY src/ai/lstm/save/lstm_multivariate_5g-mobiwatch_benign.pth.tar /tmp/
 
 # Env - TODO- Configmap
 ENV PYTHONUNBUFFERED 1

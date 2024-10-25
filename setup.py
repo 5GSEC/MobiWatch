@@ -40,7 +40,7 @@ setup(
                       "pandas",
                       "scikit-learn"],
     entry_points={"console_scripts": ["run-xapp.py=src.main:launchXapp"]},  # adds a magical entrypoint for Docker
-    data_files=[("", ["LICENSE.txt"])],
+    data_files=[("", ["LICENSE"])],
 )
 
 
