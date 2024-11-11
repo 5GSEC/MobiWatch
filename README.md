@@ -4,7 +4,7 @@ MobiWatch is an O-RAN compliant xApp that employs unsupervised unsupervised deep
 
 Currently it is compatible with two nRT-RIC implmentations: [OSC RIC](https://lf-o-ran-sc.atlassian.net/wiki/spaces/ORAN) and [SD-RAN ONOS RIC](https://docs.sd-ran.org/master/sdran-in-a-box/README.html). You can deploy and test MobiWatch based on the [tutorial](https://github.com/5GSEC/5G-Spector/wiki/O%E2%80%90RAN-SC-RIC-Deployment-Guide) we have created to instantiate an O-RAN compliant 5G network with just open-sourced software such as [OpenAirInterface](https://gitlab.eurecom.fr/oai/openairinterface5g/). 
 
-For more design details, please refer to our HotNets'24 research paper [6G-XSec: Explainable Edge Security for Emerging OpenRAN Architectures](). 
+For more design details, please refer to our **HotNets'24 research paper** [6G-XSec: Explainable Edge Security for Emerging OpenRAN Architectures](https://onehouwong.github.io/papers/HotNets_2024_6gxsec.pdf). We have also released a **demo video**: [MobiWatch Demo on 5G Attack Detection with AI/DL](https://www.5gsec.com/post/video-mobiwatch-demo-on-5g-attack-detection-with-ai-dl).  
 
 ![alt text](./fig/sys.png)
 
@@ -113,6 +113,7 @@ MobiWatch's classification results with an specific 5G network attack:
 ```
 
 This attack represents a downlink overshadowing where the network's Authentication Request message is overwritten and the UE responds with an IdentityResponse message with its identity, constituding an identity extraction attack. MobiWatch classifies this as an abnormal event as it deviates from normal traffic the DL model was traineed on.
+
 
 
 ## Dataset
