@@ -2,7 +2,28 @@ from .ai.deeplog.msgseq import MsgSeq
 from .ai.dlagent import DeepLogAgent, AutoEncoderAgent, LSTMAgent
 
 # init DL agent
-mf_trace = [
+mf_trace_benign = [
+    "UE;0;v2.0;SECSM;1731561442;12345678;1;19442;19442;1450744508;0;0;0;0;RRCSetupRequest; ;0;0;0;3;0;0",
+    "UE;1;v2.0;SECSM;1731561442;12345678;1;19442;19442;1450744508;0;0;0;0;RRCSetup; ;2;0;0;0;0;0",
+    "UE;2;v2.0;SECSM;1731561442;12345678;1;19442;19442;1450744508;0;0;0;0;RRCSetupComplete;Registrationrequest;2;0;0;1;0;0",
+    "UE;3;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;DLInformationTransfer;Authenticationrequest;2;0;0;0;0;0",
+    "UE;4;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;ULInformationTransfer;Authenticationresponse;2;0;0;0;0;0",
+    "UE;5;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;DLInformationTransfer;Securitymodecommand;2;0;0;0;0;0",
+    "UE;6;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;ULInformationTransfer;Securitymodecomplete;2;0;0;0;0;0",
+    "UE;7;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;SecurityModeCommand; ;2;0;0;0;0;0",
+    "UE;8;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;SecurityModeComplete; ;2;0;1;0;0;0",
+    "UE;9;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;RRCReconfiguration; ;2;0;1;0;0;0",
+    "UE;10;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;RRCReconfigurationComplete; ;2;0;1;0;0;0",
+    "UE;11;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;UECapabilityEnquiry; ;2;0;1;0;0;0",
+    "UE;12;v2.0;SECSM;1731561443;12345678;1;19442;19442;1450744508;0;2;0;0;UECapabilityInformation; ;2;0;1;0;0;0",
+    "UE;13;v2.0;SECSM;1731561444;12345678;1;19442;19442;1450744508;0;2;0;0;ULInformationTransfer;Registrationcomplete;2;0;1;0;0;0",
+    "UE;14;v2.0;SECSM;1731561444;12345678;1;19442;19442;1450744508;0;2;0;0;ULInformationTransfer;ULNAStransport;2;0;1;0;0;0",
+    "UE;15;v2.0;SECSM;1731561450;12345678;1;19442;19442;1450744508;0;2;0;0;ULInformationTransfer; ;2;0;1;0;0;0",
+    "UE;16;v2.0;SECSM;1731561451;12345678;1;19442;19442;1450744508;0;2;0;0;DLInformationTransfer;DeregistrationacceptUEoriginating;2;0;1;0;0;0",
+    "UE;17;v2.0;SECSM;1731561451;12345678;1;19442;19442;1450744508;0;2;0;0;RRCRelease; ;1;0;0;0;0;0",
+]
+
+mf_trace_abnormal = [
     "UE;0;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetupRequest; ;0;0;0;3;0;0",
     "UE;1;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetup; ;2;0;0;0;0;0",
     "UE;2;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetupComplete;Registrationrequest;2;0;0;1;0;0",
@@ -21,6 +42,8 @@ mf_trace = [
     "UE;15;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;ULInformationTransfer;Authenticationresponse;2;0;0;0;0;0",
     "UE;16;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;DLInformationTransfer;Registrationreject;2;0;0;0;0;0"
 ]
+
+mf_trace = mf_trace_benign
 
 # DeepLog
 # dl_agent = DeepLogAgent(model_path="/home/wen.423/Desktop/5g/5g-ai/5G-DeepWatch/deepwatch/ai/deeplog/save/LSTM_onehot_5g-select_benign_v5.pth.tar", window_size=5, ranking_metric="probability", prob_threshold=0.40)
