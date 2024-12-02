@@ -3,25 +3,23 @@ from .ai.dlagent import DeepLogAgent, AutoEncoderAgent, LSTMAgent
 
 # init DL agent
 mf_trace = [
-    "UE;0;1715451191330.7598;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCSetupRequest;0;0;0;0;0;0;0;0",
-    "UE;1;1715451191330.815;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCSetup;2;0;0;0;1715451191330.7192;0;0;0",
-    "UE;2;1715451191330.9485;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCSetupComplete;2;0;0;0;1715451191330.7192;0;0;0",
-    "UE;3;1715451191330.973;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Registrationrequest;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;4;1715451191331.0315;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Authenticationrequest;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;5;1715451191331.053;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Authenticationresponse;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;6;1715451191331.0737;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Securitymodecommand;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;7;1715451191331.0967;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Securitymodecomplete;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;8;1715451191331.1292;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;SecurityModeCommand;2;1;0;0;1715451191330.7192;0;1715451191330.7192;0",
-    "UE;9;1715451191331.1736;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;SecurityModeComplete;2;1;1;0;1715451191330.7192;0;1715451191330.7192;0",
-    # "UE;10;1715451191331.2073;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCReconfiguration;2;1;1;0;1715451191330.7192;0;1715451191330.7192;0",
-    # "UE;11;1715451191331.229;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCReconfigurationComplete;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;12;1715451191331.2688;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;UECapabilityEnquiry;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;13;1715451191331.29;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;UECapabilityInformation;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;14;1715451192331.1719;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;Registrationcomplete;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;15;1715451192331.2004;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;ULNAStransport;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;16;1715451193350.4912;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCReconfiguration;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;17;1715451193350.6807;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;DLNAStransport;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192",
-    # "UE;18;1715451193350.704;v2.0;SECSM;0;8331;1450744508;0;0;2;2;0;RRCReconfigurationComplete;2;2;1;0;1715451191330.7192;0;1715451191330.7192;1715451191330.7192"
+    "UE;0;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetupRequest; ;0;0;0;3;0;0",
+    "UE;1;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetup; ;2;0;0;0;0;0",
+    "UE;2;v2.0;SECSM;1733109001;12345678;1;52979;52979;1450744508;0;0;0;2;RRCSetupComplete;Registrationrequest;2;0;0;1;0;0",
+    "UE;3;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;DLInformationTransfer;Authenticationrequest;2;0;0;0;0;0",
+    "UE;4;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;ULInformationTransfer;Authenticationresponse;2;0;0;0;0;0",
+    "UE;5;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;DLInformationTransfer;Securitymodecommand;2;0;0;0;0;0",
+    "UE;6;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;ULInformationTransfer;Securitymodecomplete;2;0;0;0;0;0",
+    "UE;7;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;SecurityModeCommand; ;2;0;0;0;0;0",
+    "UE;8;v2.0;SECSM;1733109002;12345678;1;52979;52979;1450744508;2;2;0;2;SecurityModeComplete; ;2;0;3;0;0;0",
+    "UE;9;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;RRCSetupRequest; ;0;0;0;3;0;0",
+    "UE;10;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;RRCSetup; ;2;0;0;0;0;0",
+    "UE;11;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;RRCSetupComplete;Registrationrequest;2;0;0;2;0;0",
+    "UE;12;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;DLInformationTransfer;Identityrequest;2;0;0;0;0;0",
+    "UE;13;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;ULInformationTransfer;Identityresponse;2;0;0;0;0;0",
+    "UE;14;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;DLInformationTransfer;Authenticationrequest;2;0;0;0;0;0",
+    "UE;15;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;ULInformationTransfer;Authenticationresponse;2;0;0;0;0;0",
+    "UE;16;v2.0;SECSM;1733109018;12345678;2;58701;58701;1450744508;0;0;0;2;DLInformationTransfer;Registrationreject;2;0;0;0;0;0"
 ]
 
 # DeepLog
@@ -35,18 +33,7 @@ mf_trace = [
 
 
 # AE
-# dl_agent = AutoEncoderAgent(model_path="./src/ai/autoencoder/data/autoencoder_model.pth", sequence_length=6)
-# mf_dict = {}
-# for i in range(len(mf_trace)):
-#     mf_dict[i] = mf_trace[i]
-# seq, df = dl_agent.encode(mf_dict)
-# print(seq.shape)
-# labels = dl_agent.predict(seq)
-# print(labels)
-# dl_agent.interpret(df, labels)
-
-# LSTM
-dl_agent = LSTMAgent(model_path="./src/ai/lstm/save/lstm_multivariate_5g-mobiwatch_benign.pth.tar", sequence_length=6)
+dl_agent = AutoEncoderAgent(model_path="./src/ai/autoencoder/data/autoencoder_model.pth", sequence_length=6)
 mf_dict = {}
 for i in range(len(mf_trace)):
     mf_dict[i] = mf_trace[i]
@@ -55,3 +42,14 @@ print(seq.shape)
 labels = dl_agent.predict(seq)
 print(labels)
 dl_agent.interpret(df, labels)
+
+# LSTM
+# dl_agent = LSTMAgent(model_path="./src/ai/lstm/save/lstm_multivariate_5g-mobiwatch_benign.pth.tar", sequence_length=6)
+# mf_dict = {}
+# for i in range(len(mf_trace)):
+#     mf_dict[i] = mf_trace[i]
+# seq, df = dl_agent.encode(mf_dict)
+# print(seq.shape)
+# labels = dl_agent.predict(seq)
+# print(labels)
+# dl_agent.interpret(df, labels)

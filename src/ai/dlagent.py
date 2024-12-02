@@ -198,7 +198,7 @@ class AutoEncoderAgent(DLAgent):
         
         df = pd.read_csv(StringIO(csv_data), delimiter=delimiter)
 
-        df = df[(df["sec_state"]<1) | (df["msg"]=="SecurityModeComplete")] # filter messages after encrpytion 
+        df = df[(df["rrc_sec_state"]<1) | (df["rrc_msg"]=="SecurityModeComplete")] # filter messages after encrpytion 
         df.reset_index(drop=True, inplace=True) # reset index
 
         if len(df) > self.sequence_length:
