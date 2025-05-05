@@ -27,6 +27,7 @@ class Encoder:
             'rrc_sec_state': ['0', '1', '2', '3'],  # e.g., RRC_SEC_CONTEXT_NOT_EXIST, RRC_SEC_CONTEXT_INTEGRITY_PROTECTED, RRC_SEC_CONTEXT_CIPHERED, RRC_SEC_CONTEXT_CIPHERED_AND_INTEGRITY_PROTECTED
         }
         self.possible_categories['nas_msg'].append(" ") # add empty NAS message
+        
 
     def get_categorical_features(self):
         return self.categorical_features
@@ -49,49 +50,34 @@ class Encoder:
 
         # Concatenate all encoded features horizontally
         df_encoded = np.hstack(df_encoded)
-        
+
         return pd.DataFrame(df_encoded)
 
+    def encode_sequence(self, df_encoded: pd.DataFrame, sequence_length: int) -> np.array:
+        # skip if the data does not have enough entries to form a sequence
+        if len(df_encoded) < sequence_length:
+            return None
 
-    # def encode_label(self, df: pd.DataFrame) -> pd.DataFrame:
-    #     df_encoded = df.copy()
-
-    #     for feature in self.categorical_features:
-    #         known_values = self.possible_categories[feature]
-
-    #         # Handle missing values
-    #         df.fillna(0, inplace=True)
-
-    #         # Convert the entire column to string type BEFORE transforming
-    #         # This ensures consistency with the string values used for fitting
-    #         try:
-    #             df_encoded[feature] = df_encoded[feature].astype(str)
-    #         except Exception as e:
-    #             print(f"  Error converting column {feature} to string: {e}. Skipping.")
-    #             continue
-
-    #         # Initialize and Fit Encoder ---
-    #         le = LabelEncoder()
-    #         try:
-    #             # Fit the encoder ONLY on the complete list of known values
-    #             le.fit(known_values)
-    #         except Exception as e:
-    #             print(f"Error fitting LabelEncoder for feature '{feature}' with known values: {e}. Skipping.")
-    #             continue
-
-    #         # Transform the DataFrame Column ---
-    #         try:
-    #             # Transform the pre-processed data column
-    #             df_encoded[feature] = le.transform(df_encoded[feature])
-    #         except ValueError as e:
-    #             # This error is CRITICAL. It means a value exists in your DataFrame column
-    #             # that was NOT included in your 'all_possible_values[feature]' list.
-    #             print(f"  !!! FATAL ERROR transforming feature '{feature}' !!!")
-    #             print(f"  Reason: A value encountered in the data was NOT present in the pre-defined list used for fitting.")
-    #         except Exception as e:
-    #             print(f"  An unexpected error occurred during transform for feature '{feature}': {e}")
+        # break the encoded data into sequences
+        num_sequences = df_encoded.shape[0] - sequence_length + 1
+        X_sequences = []
+        for i in range(num_sequences):
+            seq = df_encoded[i:i + sequence_length]
+            X_sequences.append(seq)
         
-    #     df_encoded = df_encoded[self.categorical_features]
+        X_sequences = np.array(X_sequences)
+
+        # break each sequence into x and y
+        # x is the known sequence
+        # y is the next sequence for prediction
+        x_train = []
+        y_train = []
+        for i in range(len(X_sequences)):
+            x_train.append(X_sequences[i][:sequence_length])
+            y_train.append(X_sequences[i][-1])
         
-    #     return df_encoded
+        x_train = np.asarray(x_train)
+        y_train = np.asarray(y_train)
+
+        return x_train, y_train
     
