@@ -30,6 +30,9 @@ class Encoder:
         
         # self.msg_encoder = OneHotEncoder(categories=[possible_categories[feature] for feature in self.categorical_features], sparse_output=False)
         # self.id_encoder = None
+
+    def get_categorical_features(self):
+        return self.categorical_features
     
     def encode(self, df: pd.DataFrame) -> pd.DataFrame:
         df_encoded = []
@@ -53,99 +56,45 @@ class Encoder:
         return pd.DataFrame(df_encoded)
 
 
-    def encode_label(self, df: pd.DataFrame) -> pd.DataFrame:
-        df_encoded = df.copy()
+    # def encode_label(self, df: pd.DataFrame) -> pd.DataFrame:
+    #     df_encoded = df.copy()
 
-        for feature in self.categorical_features:
-            known_values = self.possible_categories[feature]
+    #     for feature in self.categorical_features:
+    #         known_values = self.possible_categories[feature]
 
-            # Handle missing values
-            df.fillna(0, inplace=True)
+    #         # Handle missing values
+    #         df.fillna(0, inplace=True)
 
-            # Convert the entire column to string type BEFORE transforming
-            # This ensures consistency with the string values used for fitting
-            try:
-                df_encoded[feature] = df_encoded[feature].astype(str)
-            except Exception as e:
-                print(f"  Error converting column {feature} to string: {e}. Skipping.")
-                continue
+    #         # Convert the entire column to string type BEFORE transforming
+    #         # This ensures consistency with the string values used for fitting
+    #         try:
+    #             df_encoded[feature] = df_encoded[feature].astype(str)
+    #         except Exception as e:
+    #             print(f"  Error converting column {feature} to string: {e}. Skipping.")
+    #             continue
 
-            # Initialize and Fit Encoder ---
-            le = LabelEncoder()
-            try:
-                # Fit the encoder ONLY on the complete list of known values
-                le.fit(known_values)
-            except Exception as e:
-                print(f"Error fitting LabelEncoder for feature '{feature}' with known values: {e}. Skipping.")
-                continue
+    #         # Initialize and Fit Encoder ---
+    #         le = LabelEncoder()
+    #         try:
+    #             # Fit the encoder ONLY on the complete list of known values
+    #             le.fit(known_values)
+    #         except Exception as e:
+    #             print(f"Error fitting LabelEncoder for feature '{feature}' with known values: {e}. Skipping.")
+    #             continue
 
-            # Transform the DataFrame Column ---
-            try:
-                # Transform the pre-processed data column
-                df_encoded[feature] = le.transform(df_encoded[feature])
-            except ValueError as e:
-                # This error is CRITICAL. It means a value exists in your DataFrame column
-                # that was NOT included in your 'all_possible_values[feature]' list.
-                print(f"  !!! FATAL ERROR transforming feature '{feature}' !!!")
-                print(f"  Reason: A value encountered in the data was NOT present in the pre-defined list used for fitting.")
-            except Exception as e:
-                print(f"  An unexpected error occurred during transform for feature '{feature}': {e}")
+    #         # Transform the DataFrame Column ---
+    #         try:
+    #             # Transform the pre-processed data column
+    #             df_encoded[feature] = le.transform(df_encoded[feature])
+    #         except ValueError as e:
+    #             # This error is CRITICAL. It means a value exists in your DataFrame column
+    #             # that was NOT included in your 'all_possible_values[feature]' list.
+    #             print(f"  !!! FATAL ERROR transforming feature '{feature}' !!!")
+    #             print(f"  Reason: A value encountered in the data was NOT present in the pre-defined list used for fitting.")
+    #         except Exception as e:
+    #             print(f"  An unexpected error occurred during transform for feature '{feature}': {e}")
         
-        df_encoded = df_encoded[self.categorical_features]
+    #     df_encoded = df_encoded[self.categorical_features]
         
-        return df_encoded
-
-    def encode_mobiflow(self, df: pd.DataFrame, sequence_length: int) -> np.array:
-        df['msg'] = df['nas_msg'].where(df['nas_msg'] != " ", other=df['rrc_msg'])
-
-        # add rrc setup complete before reg request
-        registration_indices = df.index[df['msg'] == 'Registrationrequest'].tolist()
-        
-        # Duplicate and insert the rows before the matching rows
-        for idx in sorted(registration_indices, reverse=True):  # Reverse order to avoid index shifting
-            duplicated_row = df.loc[idx].copy()
-            duplicated_row["msg"] = "RRCSetupComplete"
-            df = pd.concat([df.iloc[:idx], pd.DataFrame([duplicated_row]), df.iloc[idx:]], ignore_index=True)
-
-        # Reshape data to include sequences of network traces
-        num_sequences = df.shape[0] - sequence_length + 1
-        X_sequences = []
-        for i in range(num_sequences):
-            if i+sequence_length > df.shape[0]:
-                break
-            seq = df[i:i + sequence_length]
-            X_sequences.append(self.encode_sequence(seq, sequence_length))
-
-        return np.array(X_sequences)
+    #     return df_encoded
     
-    def encode_sequence(self, df: pd.DataFrame, sequence_len: int) -> np.array:
-        encoded_features = []
-        # in-sequence encode msg
-        if "msg" in self.categorical_features:
-            encoded_cat_features = self.msg_encoder.fit_transform(df[self.categorical_features])
-            encoded_features.append(encoded_cat_features)
-
-        # in-sequence encode device IDs
-        if self.id_encoder is None:
-            self.id_encoder = OneHotEncoder(categories=[list(range(0, sequence_len))], sparse_output=False) # max device ID depends on sequence len
-
-        # rnti
-        if "rnti" in self.identifier_features:
-            unique_rnti = df['rnti'].unique()
-            rnti_mapping = {rnti: idx for idx, rnti in enumerate(unique_rnti)}
-            rnti_mapped = df['rnti'].map(rnti_mapping)
-            encoded_rnti = self.id_encoder.fit_transform(rnti_mapped.values.reshape(-1, 1))
-            encoded_features.append(encoded_rnti)
-
-        # s_tmsi
-        if "s_tmsi" in self.identifier_features:
-            unique_tmsi = df['s_tmsi'].unique()
-            tmsi_mapping = {tmsi: idx+1 for idx, tmsi in enumerate(unique_tmsi)} # tmsi starting from 1
-            tmsi_mapping[0] = 0 # 0 tmsi is fixed
-            tmsi_mapped = df['s_tmsi'].map(tmsi_mapping)
-            encoded_tmsi = self.id_encoder.fit_transform(tmsi_mapped.values.reshape(-1, 1))
-            encoded_features.append(encoded_tmsi)
-
-        X = np.hstack(encoded_features)
-
-        return X.flatten()
