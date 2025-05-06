@@ -58,6 +58,18 @@
     },
     "db" : {
             "waitForSdl": false
+    },
+    "mobiwatch": {
+        "models": {
+            "model1": {
+                "name": "autoencoder_v2",
+                "path": "/tmp/autoencoder_v2_model.pth"
+            },
+            "model2": {
+                "name": "lstm_v2",
+                "path": "/tmp/lstm_multivariate_mobiflow_v2_benign.pth.tar"
+            }
+        }
     }
 }
 

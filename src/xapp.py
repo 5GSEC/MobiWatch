@@ -17,12 +17,13 @@
 # ==================================================================================
 import requests
 import os
+import json
 from os import getenv
 from ricxappframe.xapp_frame import RMRXapp, rmr
 from .utils.constants import Constants
 from .manager import *
 from .handler import *
-from .ai.dlagent import DeepLogAgent, AutoEncoderAgent, LSTMAgent
+from .ai.dlagent import DeepLogAgent, AutoEncoderAgent, LSTMAgent, AutoEncoderAgent_v2, LSTMAgent_v2
 from mdclogpy import Level
 
 class MobiWatchXapp:
@@ -63,13 +64,46 @@ class MobiWatchXapp:
         # register the xApp to the RIC manager
         self._register(rmr_xapp)
 
-        # model path
-        train_dataset = "5g-mobiwatch"
-        train_label = "benign"
-        train_ver = "v5"
+        # load xApp config
+        models = []
+        with open(self.__XAPP_CONFIG_PATH, 'r') as config_file:
+            config_json = json.loads(config_file.read())
+            models = config_json["mobiwatch"]["models"]
+            rmr_xapp.logger.info(f"Loaded xApp model config: {models}")
+
+        for model in models.keys():
+            model_path = models[model]["path"]
+            model_name = models[model]["name"]
+            if model_name == "autoencoder_v2":
+                self.dl_ae2_agent = AutoEncoderAgent_v2(model_path)
+                # load mobiflow data
+                ue_mf, bs_mf = self.dl_ae2_agent.load_mobiflow(sdl_mgr)
+                if len(ue_mf) <= 0:
+                    return
+                seq, df = self.dl_ae2_agent.encode(ue_mf)
+                if seq is not None and len(seq) > 0:
+                    labels = self.dl_ae2_agent.predict(seq)
+                    self.dl_ae2_agent.interpret(df, labels)
+
+            elif model_name == "lstm_v2":
+                sqeuence_length = 6 # use the first 5 to predict the 6th
+                self.dl_lstm2_agent = LSTMAgent_v2(model_path, sqeuence_length)
+                # load mobiflow data
+                ue_mf, bs_mf = self.dl_lstm2_agent.load_mobiflow(sdl_mgr)
+                if len(ue_mf) <= 0:
+                    return
+                x_seq, y_seq, df = self.dl_lstm2_agent.encode(ue_mf)
+                if x_seq is not None and len(x_seq) > 0:
+                    labels = self.dl_lstm2_agent.predict(x_seq, y_seq)
+                    self.dl_lstm2_agent.interpret(df, labels)
+            
+            else:
+                rmr_xapp.logger.error(f"Unknown model name: {model_name}")
+                continue
+
 
         # init DL agent
-        model = "AE"
+        # model = "AE"
         # if model == "DeelLog":
         #     model_path = os.path.join(f"/tmp/LSTM_onehot_{train_dataset}_{train_label}_{train_ver}.pth.tar")
         #     self.dl_agent = DeepLogAgent(model_path=model_path, window_size=5, ranking_metric="probability", prob_threshold=0.40)
@@ -81,30 +115,30 @@ class MobiWatchXapp:
         #     for i in range(len(x)):
         #         predict_y = self.dl_agent.predict(x[i])
         #         self.dl_agent.interpret(x[i], predict_y, y[i])
-        if model == "AE":
-            model_path = os.path.join(f"/tmp/autoencoder_model.pth")
-            seq_len = 6
-            self.dl_agent = AutoEncoderAgent(model_path, seq_len)
-            # load mobiflow data
-            ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
-            if len(ue_mf) <= 0:
-                return
-            seq, df = self.dl_agent.encode(ue_mf)
-            if seq is not None and len(seq) > 0:
-                labels = self.dl_agent.predict(seq)
-                self.dl_agent.interpret(df, labels)
-        elif model == "lstm":
-            model_path = os.path.join(f"/tmp/lstm_multivariate_5g-mobiwatch_benign.pth.tar")
-            seq_len = 6
-            self.dl_agent = LSTMAgent(model_path, seq_len)
-            # load mobiflow data
-            ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
-            if len(ue_mf) <= 0:
-                return
-            seq, df = self.dl_agent.encode(ue_mf)
-            if seq is not None and len(seq) > 0:
-                labels = self.dl_agent.predict(seq)
-                self.dl_agent.interpret(df, labels)
+        # if model == "AE":
+        #     model_path = os.path.join(f"/tmp/autoencoder_model.pth")
+        #     seq_len = 6
+        #     self.dl_agent = AutoEncoderAgent(model_path, seq_len)
+        #     # load mobiflow data
+        #     ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
+        #     if len(ue_mf) <= 0:
+        #         return
+        #     seq, df = self.dl_agent.encode(ue_mf)
+        #     if seq is not None and len(seq) > 0:
+        #         labels = self.dl_agent.predict(seq)
+        #         self.dl_agent.interpret(df, labels)
+        # elif model == "lstm":
+        #     model_path = os.path.join(f"/tmp/lstm_multivariate_5g-mobiwatch_benign.pth.tar")
+        #     seq_len = 6
+        #     self.dl_agent = LSTMAgent(model_path, seq_len)
+        #     # load mobiflow data
+        #     ue_mf, bs_mf = self.dl_agent.load_mobiflow(sdl_mgr)
+        #     if len(ue_mf) <= 0:
+        #         return
+        #     seq, df = self.dl_agent.encode(ue_mf)
+        #     if seq is not None and len(seq) > 0:
+        #         labels = self.dl_agent.predict(seq)
+        #         self.dl_agent.interpret(df, labels)
 
     def _register(self, rmr_xapp):
         """

@@ -30,6 +30,18 @@ __current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.join(__current_dir, 'lstm'))
 from .lstm import LSTM_multivariate
 
+# import AutoEncoder_v2 module
+from .autoencoder_v2 import Encoder as AEEncoder_v2
+__current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.join(__current_dir, 'autoencoder_v2'))
+from .autoencoder_v2 import Autoencoder as Autoencoder_v2
+
+# import LSTM_v2 module
+from .lstm_v2 import Encoder as LSTMEncoder_v2
+__current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.join(__current_dir, 'lstm_v2'))
+from .lstm_v2 import LSTM_multivariate as LSTM_multivariate_v2
+
 
 class DLAgent(ABC):
 
@@ -96,6 +108,140 @@ class DLAgent(ABC):
     def predict(self, input_data):
         pass
 
+class AutoEncoderAgent_v2(DLAgent):
+    def __init__(self, model_path):
+        super().__init__()
+        self.rat = "5G"
+        self.model_path = model_path
+        self.model = torch.load(self.model_path)['model']
+        self.threshold = torch.load(self.model_path)['threshold']
+        self.encoder = AEEncoder_v2()
+        logging.info(f"Autoencoder_v2 model loaded, model path: {self.model_path}")
+        logging.info(f"{self.model}")
+        # Model parameters
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def encode(self, ue_mf: dict):
+        if ue_mf.__len__() <= 0:
+            return None
+        # load UE mobiflow keys
+        delimiter = ";"
+        ue_mf_meta_str = []
+        for k in UEMobiFlow().__dict__.keys():
+            ue_mf_meta_str.append(k)
+        ue_mf_meta_str = delimiter.join(ue_mf_meta_str)
+
+        # construct csv like data from list
+        csv_data = ue_mf_meta_str
+        for v in ue_mf.values():
+            csv_data = csv_data + "\n" + v
+        
+        df = pd.read_csv(StringIO(csv_data), delimiter=delimiter)
+
+        # df = df[(df["rrc_sec_state"]<1) | (df["rrc_msg"]=="SecurityModeComplete")] # filter messages after encrpytion 
+        df.reset_index(drop=True, inplace=True) # reset index
+
+        X_sequences = self.encoder.encode(df)
+        X_sequences = X_sequences.to_numpy()
+
+        return X_sequences, df
+
+    def predict(self, seq: np.array) -> list:
+        seq_tensor = torch.tensor(seq, dtype=torch.float32)
+        self.model.eval()
+        with torch.no_grad():
+            reconstructions = self.model(seq_tensor)
+            reconstruction_error = torch.mean((seq_tensor - reconstructions) ** 2, dim=1)
+            anomalies = reconstruction_error > self.threshold
+            return anomalies.tolist()
+
+    def interpret(self, mf_data: pd.DataFrame, labels: list):
+        # Convert back to DataFrame
+        for i in range(len(labels)):
+            sequence_data = mf_data.loc[i]
+            # sequence_data = mf_data.loc[i][self.encoder.get_categorical_features()]
+            label = labels[i]
+            if label == False:
+                self.logger.info(f"\n{sequence_data.to_frame()}")
+                self.logger.info("Benign\n\n")
+            else:
+                self.logger.error(f"\n{sequence_data.to_frame()}")
+                self.logger.error("Abnormal\n\n")
+
+class LSTMAgent_v2(DLAgent):
+    def __init__(self, model_path, sequence_length=6):
+        super().__init__()
+        self.rat = "5G"
+        self.model_path = model_path
+        self.model = torch.load(self.model_path)['net']
+        self.threshold = torch.load(self.model_path)['thres']
+        self.sequence_length = sequence_length
+        self.encoder = LSTMEncoder_v2()
+        logging.info(f"LSTM_V2 model loaded, model path: {self.model_path}")
+        logging.info(f"{self.model}")
+        # Model parameters
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def encode(self, ue_mf: dict):
+        if ue_mf.__len__() <= 0:
+            return None
+        # load UE mobiflow keys
+        delimiter = ";"
+        ue_mf_meta_str = []
+        for k in UEMobiFlow().__dict__.keys():
+            ue_mf_meta_str.append(k)
+        ue_mf_meta_str = delimiter.join(ue_mf_meta_str)
+
+        # construct csv like data from list
+        csv_data = ue_mf_meta_str
+        for v in ue_mf.values():
+            csv_data = csv_data + "\n" + v
+        
+        df = pd.read_csv(StringIO(csv_data), delimiter=delimiter)
+
+        # df = df[(df["sec_state"]<1) | (df["msg"]=="SecurityModeComplete")] # filter messages after encrpytion 
+        df.reset_index(drop=True, inplace=True) # reset index
+
+        # encode features
+        df_encoded = self.encoder.encode(df)
+
+        # break the encoded data into sequences
+        if len(df) > self.sequence_length:
+            X_sequences, Y_sequences = self.encoder.encode_sequence(df_encoded, self.sequence_length)
+        else:
+            logging.error("Empty data frame, insufficient data")
+            X_sequences = []
+            Y_sequences = []
+
+        return X_sequences, Y_sequences, df
+
+    def predict(self, x_seq: np.array, y_seq: np.array) -> list:
+        # Convert to PyTorch tensors
+        x_test = torch.from_numpy(x_seq).type(torch.float).to(self.device)
+        y_test = torch.from_numpy(y_seq).type(torch.float).to(self.device)
+
+        self.model.eval()
+
+        with torch.no_grad():
+            output = self.model(x_test)
+            mse_vec = torch.mean((output - y_test) ** 2, dim=1)
+
+            # Convert back to DataFrame
+            anomalies = torch.tensor(mse_vec > self.threshold)
+            return anomalies.tolist()
+
+    def interpret(self, mf_data: pd.DataFrame, labels: list):
+        # Convert back to DataFrame
+        for i in range(len(labels)):
+            sequence_data = mf_data.loc[i:i + self.sequence_length - 1][self.encoder.get_categorical_features()]
+            df_sequence = pd.DataFrame(sequence_data)
+            label = labels[i]
+            if label == False:
+                self.logger.info(f"\n{df_sequence}")
+                self.logger.info("Benign\n\n")
+            else:
+                self.logger.error(f"\n{df_sequence}")
+                self.logger.error("Abnormal\n\n")
 
 
 class DeepLogAgent(DLAgent):

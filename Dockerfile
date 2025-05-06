@@ -47,6 +47,8 @@ RUN pip install /tmp
 # COPY src/ai/deeplog/save/ /tmp/
 COPY src/ai/autoencoder/data/autoencoder_model.pth /tmp/
 COPY src/ai/lstm/save/lstm_multivariate_5g-mobiwatch_benign.pth.tar /tmp/
+COPY src/ai/autoencoder_v2/data/autoencoder_v2_model.pth /tmp/
+COPY src/ai/lstm_v2/data/lstm_multivariate_mobiflow_v2_benign.pth.tar /tmp/
 
 # Env - TODO- Configmap
 ENV PYTHONUNBUFFERED 1
