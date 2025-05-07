@@ -46,7 +46,7 @@ print(df_encoded.shape)
 x_train, y_train = encoder.encode_sequence(df_encoded, sequence_length+1)
 print(x_train.shape, y_train.shape)
 
-seed = 8
+seed = 10
 val_portion = 0.1 # size of validation set
 indices = np.arange(x_train.shape[0])
 x_train, x_val, indices_train, indices_val = train_test_split(x_train, indices, test_size=val_portion, random_state=seed)
@@ -62,12 +62,12 @@ torch.save({'net':model,'thres':thres},f'{target_folder}/data/lstm_multivariate_
 rmse_vec = test(model, thres, x_val, y_val)
 anomalies = torch.tensor(rmse_vec > thres)
 if len(anomalies) > 0:
-    for anomalies_idx in torch.nonzero(anomalies).squeeze():
-        df_idx = anomalies_idx
-        sequence_data = df_all.loc[df_idx:df_idx + sequence_length][encoder.get_categorical_features()]
-        df_sequence = pd.DataFrame(sequence_data)
-        print(df_sequence)
-        print()
+    # for anomalies_idx in torch.nonzero(anomalies).squeeze():
+    #     df_idx = anomalies_idx
+    #     sequence_data = df_all.loc[df_idx:df_idx + sequence_length][encoder.get_categorical_features()]
+    #     df_sequence = pd.DataFrame(sequence_data)
+    #     print(df_sequence)
+    #     print()
     
     FP = len(torch.nonzero(anomalies).squeeze())
     FN = 0

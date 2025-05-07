@@ -9,7 +9,8 @@ class Encoder:
     def __init__(self):
         self.identifier_features = ['rnti', 's_tmsi']
         self.msg_features = ['rrc_msg', 'nas_msg']
-        self.categorical_features = ['rrc_msg', 'nas_msg', 'rrc_cipher_alg', 'rrc_integrity_alg', 'nas_cipher_alg', 'nas_integrity_alg', 'rrc_state', 'nas_state', 'rrc_sec_state']
+        self.categorical_features = ['rrc_msg', 'nas_msg', 'rrc_state', 'nas_state']
+                                    # 'rrc_sec_state', 'rrc_cipher_alg', 'rrc_integrity_alg', 'nas_cipher_alg', 'nas_integrity_alg', 
                                     #  'reserved_field_1', 'reserved_field_2', 'reserved_field_3']
         
         # Categorical variables (msg) encoder

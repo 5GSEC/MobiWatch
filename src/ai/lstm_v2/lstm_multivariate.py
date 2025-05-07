@@ -17,7 +17,7 @@ batch_size = 256
 num_layer = 1
 lr = 1e-3
 weight_decay = 1e-5
-epoches = 500
+epoches = 400
 seq_len = 5
 
 class LSTM_multivariate(nn.Module):
