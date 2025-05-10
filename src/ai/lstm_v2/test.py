@@ -46,6 +46,8 @@ if __name__ == "__main__":
 
     for f in csv_files:
         if f.endswith(".csv"):
+            if f == "test.csv":
+                continue
             print(f"Processing file: {f}")
             df = pd.read_csv(f'{data_folder}/{f}', delimiter=delimeter, names=mf_headers)
             df = df[df['msg_type'] == 'UE']
@@ -112,7 +114,7 @@ if __name__ == "__main__":
         plt.xlabel('Seq Index')  # X-axis label
         plt.ylabel('RMSE')  # Y-axis label
         plt.grid(True)  # Adding a grid
-        plt.savefig("test.png")  # Display the plot
+        plt.savefig(f"{target_folder}/test.png")  # Display the plot
 
     # ground truth
     # gt = {"blind dos": [10, 21, 32], 
