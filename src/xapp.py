@@ -97,9 +97,9 @@ class MobiWatchXapp:
                             abnormal_mf_index.append(int(list(ue_mf.keys())[i])) # msg_id is at index 1
                     
                     # format:
-                    # model_name;abnormal_index_1, abnormal_index_2, abnormal_index_3
-                    # e.g., "autoencoder_v2;1,2,3"
-                    str_to_write = f"{model_name};{','.join(str(idx) for idx in abnormal_mf_index)}" # use ; as delimiter
+                    # model_name;abnormal_index_1; abnormal_index_2; abnormal_index_3
+                    # e.g., "autoencoder_v2;1;2;3"
+                    str_to_write = f"{model_name};{';'.join(str(idx) for idx in abnormal_mf_index)}" # use ; as delimiter
                     rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
                     sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
                     self.event_counter += 1
