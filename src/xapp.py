@@ -64,6 +64,10 @@ class MobiWatchXapp:
         # register the xApp to the RIC manager
         self._register(rmr_xapp)
 
+        
+        self.SDL_EVENT_NS = "mobiwatch-event"
+        self.event_counter = 1 # event index start from 1
+
         # load xApp config
         models = []
         with open(self.__XAPP_CONFIG_PATH, 'r') as config_file:
@@ -85,9 +89,25 @@ class MobiWatchXapp:
                     labels = self.dl_ae2_agent.predict(seq)
                     self.dl_ae2_agent.interpret(df, labels)
 
+                    # write abnormal data to sdl
+                    abnormal_mf_index = []
+                    for i in range(len(labels)):
+                        label = labels[i]
+                        if label == True:
+                            abnormal_mf_index.append(int(list(ue_mf.keys())[i])) # msg_id is at index 1
+                    
+                    # format:
+                    # model_name;abnormal_index_1, abnormal_index_2, abnormal_index_3
+                    # e.g., "autoencoder_v2;1,2,3"
+                    str_to_write = f"{model_name};{','.join(str(idx) for idx in abnormal_mf_index)}" # use ; as delimiter
+                    rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
+                    sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
+                    self.event_counter += 1
+
+
             elif model_name == "lstm_v2":
-                sqeuence_length = 6 # use the first 5 to predict the 6th
-                self.dl_lstm2_agent = LSTMAgent_v2(model_path, sqeuence_length)
+                sequence_length = 6 # use the first 5 to predict the 6th
+                self.dl_lstm2_agent = LSTMAgent_v2(model_path, sequence_length)
                 # load mobiflow data
                 ue_mf, bs_mf = self.dl_lstm2_agent.load_mobiflow(sdl_mgr)
                 if len(ue_mf) <= 0:
@@ -96,6 +116,25 @@ class MobiWatchXapp:
                 if x_seq is not None and len(x_seq) > 0:
                     labels = self.dl_lstm2_agent.predict(x_seq, y_seq)
                     self.dl_lstm2_agent.interpret(df, labels)
+                
+                # write abnormal data to sdl
+                abnormal_mf_seq = []
+                for i in range(len(labels)):
+                    label = labels[i]
+                    if label == True:
+                        # the ith index means sequence in range [i, i+sequence_length]
+                        sequence_idx_list = []
+                        for j in range(i, i+sequence_length):
+                            sequence_idx_list.append(int(list(ue_mf.keys())[j]))
+                        abnormal_mf_seq.append(",".join(str(idx) for idx in sequence_idx_list))
+
+                # format:
+                # model_name;abnormal_sequence_index_1, abnormal_sequence_index_2, abnormal_sequence_index_3
+                # e.g., "lstm_v2;123456,234567,345678"
+                str_to_write = f"{model_name};{';'.join(str(seq) for seq in abnormal_mf_seq)}" # use ; as delimiter
+                rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
+                sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
+                self.event_counter += 1
             
             else:
                 rmr_xapp.logger.error(f"Unknown model name: {model_name}")
