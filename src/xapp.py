@@ -89,20 +89,46 @@ class MobiWatchXapp:
                     labels = self.dl_ae2_agent.predict(seq)
                     self.dl_ae2_agent.interpret(df, labels)
 
-                    # write abnormal data to sdl
-                    abnormal_mf_index = []
+                    '''
+                    Abnormal event report strategy for Autoencoder: 
+                    1. Aggregate all abnormal MobiFlow index for each UE
+                    2. Report one abnormal event for each UE with the list of indexes
+                    '''
+                    abnormal_event_by_ue = {}
                     for i in range(len(labels)):
                         label = labels[i]
                         if label == True:
-                            abnormal_mf_index.append(int(list(ue_mf.keys())[i])) # msg_id is at index 1
+                            abnormal_mf_index = int(list(ue_mf.keys())[i])
+                            # find mobiflow entry with index
+                            abnormal_mf = ue_mf[abnormal_mf_index].split(";")
                     
-                    # format:
-                    # model_name;abnormal_index_1; abnormal_index_2; abnormal_index_3
-                    # e.g., "autoencoder_v2;1;2;3"
-                    str_to_write = f"{model_name};{';'.join(str(idx) for idx in abnormal_mf_index)}" # use ; as delimiter
-                    rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
-                    sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
-                    self.event_counter += 1
+                            event_name = "Abnormal UE State"
+                            timestamp = abnormal_mf[4] # timestamp at index 4
+                            nr_cell_id = abnormal_mf[5] # cell id at index 5
+                            ue_id = abnormal_mf[7] # ue id at index 7
+
+                            if abnormal_event_by_ue.keys().__contains__(ue_id):
+                                abnormal_event_by_ue[ue_id]["abnormal_mf_index_list"].append(abnormal_mf_index)
+                            else:
+                                abnormal_event_by_ue[ue_id] = {
+                                    "event_name": event_name,
+                                    "timestamp": timestamp,
+                                    "nr_cell_id": nr_cell_id,
+                                    "ue_id": ue_id,
+                                    "abnormal_mf_index_list": [abnormal_mf_index],
+                                }
+
+                    for event in abnormal_event_by_ue.values():
+                        # generate event descriptions
+                        index_str = ",".join(str(idx) for idx in event["abnormal_mf_index_list"])
+                        event_desc = f"Abnormal UE state detected by the Autoencoder model at the following MobiFlow index {index_str}"
+                        # write abnormal data to sdl
+                        # format:
+                        str_to_write = f"{model_name};{event['event_name']};{event['nr_cell_id']};{event['ue_id']};{event['timestamp']};{index_str};{event_desc}" # use ; as delimiter
+
+                        rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
+                        sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
+                        self.event_counter += 1
 
 
             elif model_name == "lstm_v2":
@@ -117,8 +143,13 @@ class MobiWatchXapp:
                     labels = self.dl_lstm2_agent.predict(x_seq, y_seq)
                     self.dl_lstm2_agent.interpret(df, labels)
                 
-                # write abnormal data to sdl
-                abnormal_mf_seq = []
+                '''
+                Abnormal event report strategy for LSTM: 
+                1. Aggregate all abnormal MobiFlow sequence index for each UE
+                2. Merge the common sequences for each UE, e.g., [1,2,3], [2,3,4] -> [1,2,3,4]
+                2. Report one abnormal event for each UE with the list of sequences
+                '''
+                abnormal_event_by_ue = {}
                 for i in range(len(labels)):
                     label = labels[i]
                     if label == True:
@@ -126,15 +157,41 @@ class MobiWatchXapp:
                         sequence_idx_list = []
                         for j in range(i, i+sequence_length):
                             sequence_idx_list.append(int(list(ue_mf.keys())[j]))
-                        abnormal_mf_seq.append(",".join(str(idx) for idx in sequence_idx_list))
 
-                # format:
-                # model_name;abnormal_sequence_index_1, abnormal_sequence_index_2, abnormal_sequence_index_3
-                # e.g., "lstm_v2;123456,234567,345678"
-                str_to_write = f"{model_name};{';'.join(str(seq) for seq in abnormal_mf_seq)}" # use ; as delimiter
-                rmr_xapp.logger.info(f"Writing abnormal MobiFlow index to sdl: {str_to_write}")
-                sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
-                self.event_counter += 1
+                        abnormal_mf_index = int(list(ue_mf.keys())[i])
+                        # find mobiflow entry with index
+                        abnormal_mf = ue_mf[abnormal_mf_index].split(";")
+                        event_name = "Abnormal UE Sequence"
+                        timestamp = abnormal_mf[4] # timestamp at index 4
+                        nr_cell_id = abnormal_mf[5] # cell id at index 5
+                        ue_id = abnormal_mf[7] # ue id at index 7
+
+                        if abnormal_event_by_ue.keys().__contains__(ue_id):
+                            abnormal_event_by_ue[ue_id]["abnormal_mf_sequence_list"].append(sequence_idx_list)
+                        else:
+                            abnormal_event_by_ue[ue_id] = {
+                                "event_name": event_name,
+                                "timestamp": timestamp,
+                                "nr_cell_id": nr_cell_id,
+                                "ue_id": ue_id,
+                                "abnormal_mf_sequence_list": [sequence_idx_list],
+                            }
+
+                # write abnormal data to sdl
+                for event in abnormal_event_by_ue.values():
+                    # merge the common sequences for each UE
+                    # e.g., input [[1,2,3], [2,3,4]] -> output [1,2,3,4]
+                    input_sequences_list = event["abnormal_mf_sequence_list"]
+                    merged_sequence_list = self.dl_lstm2_agent.merge_integer_lists(input_sequences_list)
+
+                    # generate event descriptions
+                    event_desc = f"Abnormal UE message sequences detected by the LSTM model at the following MobiFlow sequences {str(merged_sequence_list)}"
+                    # format:
+                    str_to_write = f"{model_name};{event['event_name']};{event['nr_cell_id']};{event['ue_id']};{event['timestamp']};{str(merged_sequence_list)};{event_desc}" # use ; as delimiter
+
+                    rmr_xapp.logger.info(f"Writing abnormal MobiFlow sequences to sdl: {str_to_write}")
+                    sdl_mgr.store_data_to_sdl(self.SDL_EVENT_NS, str(self.event_counter), str_to_write)
+                    self.event_counter += 1
             
             else:
                 rmr_xapp.logger.error(f"Unknown model name: {model_name}")

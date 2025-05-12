@@ -243,6 +243,69 @@ class LSTMAgent_v2(DLAgent):
                 self.logger.error(f"\n{df_sequence}")
                 self.logger.error("Abnormal\n\n")
 
+    def merge_integer_lists(self, input_list_of_lists):
+        """
+        Merges overlapping lists of integers.
+
+        Takes a list of lists, where each inner list represents a sequence of
+        integers. If any two inner lists share one or more common integers,
+        they are merged into a single sequence containing all unique integers
+        from the merged lists. This process repeats until no more merges are
+        possible.
+
+        Args:
+          input_list_of_lists: A list of lists of integers.
+                               e.g., [[1,2,3], [3,4,5], [7,8,9]]
+
+        Returns:
+          A list of lists, where each inner list is a merged sequence
+          of unique integers, sorted in ascending order. Returns an empty list
+          if the input is empty or contains only empty inner lists.
+          e.g., [[1, 2, 3, 4, 5], [7, 8, 9]]
+        """
+        if not input_list_of_lists:
+          return []
+
+        # 1. Convert input lists to a list of sets
+        # We filter out any empty lists provided in the input during conversion.
+        sets_list = [set(inner_list) for inner_list in input_list_of_lists if inner_list]
+
+        # If after filtering empty lists, the sets_list is empty, return []
+        if not sets_list:
+            return []
+
+        # 2. Iteratively merge sets that have common elements (same logic as before)
+        merged = True  # Flag to check if any merge happened in a pass
+        while merged:
+          merged = False
+          i = 0
+          # Iterate through the list of sets
+          while i < len(sets_list):
+            j = i + 1
+            # Compare set 'i' with subsequent sets 'j'
+            while j < len(sets_list):
+              # Check if sets 'i' and 'j' have any elements in common
+              # Using 'isdisjoint()' is efficient for checking overlap
+              if not sets_list[i].isdisjoint(sets_list[j]):
+                # If they overlap, merge set 'j' into set 'i'
+                sets_list[i].update(sets_list[j])
+                # Remove the merged set 'j' from the list
+                del sets_list[j]
+                # A merge occurred, so set the flag to True to repeat the process
+                merged = True
+                # Do not increment j, because the element at the 'j' index
+                # is now the *next* element we need to compare against 'i'.
+              else:
+                # If no overlap, move to the next set 'j'
+                j += 1
+            # Move to the next set 'i'
+            i += 1
+
+        # 3. Convert the final list of sets into a list of sorted lists
+        result_list = [sorted(list(s)) for s in sets_list]
+
+        return result_list
+
 
 class DeepLogAgent(DLAgent):
     def __init__(self, model_path, window_size=5, ranking_metric="top-k", num_candidates=1, prob_threshold=0.40):
