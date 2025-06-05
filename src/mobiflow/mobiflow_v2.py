@@ -8,6 +8,9 @@ from .encoding import *
 def get_time_ms():
     return time.time() * 1000
 
+def get_time_sec():
+    return time.time()
+
 ###################### Auxiliary classes ######################
 
 class State(Enum):
@@ -53,7 +56,7 @@ class SecState(State):
 
 ###################### Constants ######################
 
-MOBIFLOW_VERSION = "v2.0"
+MOBIFLOW_VERSION = "v2.1"
 GENERATOR_NAME = "SECSM"
 UE_MOBIFLOW_ID_COUNTER = 0
 BS_MOBIFLOW_ID_COUNTER = 0
@@ -76,6 +79,7 @@ class UEMobiFlow:
         self.gnb_du_ue_f1ap_id = 0      # UE meta  - UE id identified by gNB DU F1AP
         self.rnti = 0                   # UE meta  - ue rnti
         self.s_tmsi = 0                 # UE meta  - ue s-tmsi
+        self.mobile_id = 0              # UE meta  - mobile device id (e.g., SUPI, SUCI, IMEI)
         self.rrc_cipher_alg = 0         # UE packet telemetry  - rrc cipher algorithm
         self.rrc_integrity_alg = 0      # UE packet telemetry  - rrc integrity algorithm
         self.nas_cipher_alg = 0         # UE packet telemetry  - nas cipher algorithm
@@ -113,7 +117,7 @@ class BSMobiFlow:
     def __init__(self):
         self.msg_type = "BS"            # Msg hdr  - mobiflow type [UE, BS]
         self.msg_id = 0                 # Msg hdr  - unique mobiflow event ID
-        self.timestamp = get_time_ms()              # Msg hdr  - timestamp (ms)
+        self.timestamp = get_time_sec()              # Msg hdr  - timestamp (ms)
         self.mobiflow_ver = MOBIFLOW_VERSION        # Msg hdr  - version of Mobiflow
         self.generator_name = GENERATOR_NAME        # Msg hdr  - generator name (e.g., SECSM)
         #####################################################################
@@ -281,7 +285,7 @@ class BS:
         self.idle_ue_cnt = 0
         self.max_ue_cnt = 0
         #### BS Timer ####
-        self.initial_timer = get_time_ms()
+        self.initial_timer = get_time_sec()
         self.inactive_timer = 0
         #### History record ####
         self.ue = []
@@ -293,11 +297,11 @@ class BS:
         # update UE if found
         for u in self.ue:
             if u.__eq__(ur):
-                u.last_ts = get_time_ms()
+                u.last_ts = get_time_sec()
                 return
 
         # add new UE
-        ur.last_ts = get_time_ms()
+        ur.last_ts = get_time_sec()
         self.ue.append(ur)
 
     def __str__(self) -> str:
@@ -337,7 +341,7 @@ class BS:
         global BS_MOBIFLOW_ID_COUNTER
         bmf.msg_id = BS_MOBIFLOW_ID_COUNTER
         BS_MOBIFLOW_ID_COUNTER += 1
-        bmf.timestamp = get_time_ms()
+        bmf.timestamp = get_time_sec()
         bmf.nr_cell_id = self.nr_cell_id
         bmf.mcc = self.mcc
         bmf.mnc = self.mnc
@@ -376,6 +380,18 @@ def parse_measurement_into_mobiflow(kpm_measurement_dict: dict) -> List[UEMobiFl
     for key in kpm_keys:
         if key in mf.__dict__.keys():
             setattr(mf, key, int(kpm_measurement_dict[key])) # assume key name and variable name matches
+        elif key == "s_tmsi_part1":
+            mf.s_tmsi = int(kpm_measurement_dict[key]) << 32
+        elif key == "s_tmsi_part2":
+            mf.s_tmsi = mf.s_tmsi + int(kpm_measurement_dict[key])
+        elif key == "nr_cell_id_part1":
+            mf.nr_cell_id = int(kpm_measurement_dict[key]) << 32
+        elif key == "nr_cell_id_part2":
+            mf.nr_cell_id = mf.nr_cell_id + int(kpm_measurement_dict[key])
+        elif key == "mobile_id_part1":
+            mf.mobile_id = int(kpm_measurement_dict[key]) << 32
+        elif key == "mobile_id_part2":
+            mf.mobile_id = mf.mobile_id + int(kpm_measurement_dict[key])
         elif key.startswith("msg"):
             continue
         else:
