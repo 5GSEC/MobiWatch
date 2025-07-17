@@ -50,10 +50,12 @@ class DLAgent(ABC):
         self.logger = logging.getLogger("mobiwatch")
         self.logger.setLevel(logging.DEBUG)
         self.logger.propagate = False  # avoid double printing
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        ch.setFormatter(LogFormatter())
-        self.logger.addHandler(ch)
+        # Only add handler if no handlers exist yet
+        if not self.logger.handlers:
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.DEBUG)
+            ch.setFormatter(LogFormatter())
+            self.logger.addHandler(ch)
         # latest mobiflow index read from the database
         self.ue_mobiflow_idx = 0
         self.bs_mobiflow_idx = 0
@@ -107,6 +109,21 @@ class DLAgent(ABC):
     @abstractmethod
     def predict(self, input_data):
         pass
+
+# DataLoaderAgent is used to load mobiflow data from the SDL database
+class DataLoaderAgent(DLAgent):
+    def __init__(self):
+        super().__init__()
+        self.ue_mobiflow_idx = 0
+        self.bs_mobiflow_idx = 0
+        self.ue_mobiflow = {}
+        self.bs_mobiflow = {}
+    
+    def encode(self, raw_data):
+        return raw_data
+    
+    def predict(self, input_data):
+        return input_data
 
 class AutoEncoderAgent_v2(DLAgent):
     def __init__(self, model_path):
@@ -181,6 +198,9 @@ class LSTMAgent_v2(DLAgent):
         logging.info(f"{self.model}")
         # Model parameters
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    def get_sequence_length(self):
+        return self.sequence_length
 
     def encode(self, ue_mf: dict):
         if ue_mf.__len__() <= 0:
@@ -206,7 +226,7 @@ class LSTMAgent_v2(DLAgent):
         df_encoded = self.encoder.encode(df)
 
         # break the encoded data into sequences
-        if len(df) > self.sequence_length:
+        if len(df) >= self.sequence_length:
             X_sequences, Y_sequences = self.encoder.encode_sequence(df_encoded, self.sequence_length)
         else:
             logging.error("Empty data frame, insufficient data")
