@@ -256,6 +256,9 @@ class LSTMAgent_v2(DLAgent):
             sequence_data = mf_data.loc[i:i + self.sequence_length - 1][self.encoder.get_categorical_features()]
             df_sequence = pd.DataFrame(sequence_data)
             label = labels[i]
+            # only output sequences with the same rnti
+            if mf_data.iloc[i]['rnti'] != mf_data.iloc[i + self.sequence_length - 1]['rnti']:
+                continue
             if label == False:
                 self.logger.info(f"\n{df_sequence}")
                 self.logger.info("Benign\n\n")
