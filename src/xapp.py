@@ -186,6 +186,10 @@ class MobiWatchXapp:
                             label = labels[i]
                             if label == True:
                                 # the ith index means sequence in range [i, i+sequence_length]
+                                if ue_mf_to_analyze[i].split(";")[8] != ue_mf_to_analyze[i + sequence_length - 1].split(";")[8]:
+                                    rmr_xapp.logger.info(f"Skip sequence with different rnti")
+                                    continue # only process sequences with the same rnti
+
                                 sequence_idx_list = []
                                 for j in range(i, i+sequence_length):
                                     sequence_idx_list.append(int(list(ue_mf_to_analyze.keys())[j]))
