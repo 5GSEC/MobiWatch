@@ -167,6 +167,7 @@ class MobiWatchXapp:
                         continue # no new data to analyze
                     # from self.dl_lstm2_mobiflow_idx - sequence_length to len(global_ue_mf)
                     ue_mf_to_analyze = {k: v for k, v in global_ue_mf.items() if k > self.dl_lstm2_mobiflow_idx+1-sequence_length}
+                    rmr_xapp.logger.info(f"ue_mf_to_analyze: {ue_mf_to_analyze}")
                     if len(ue_mf_to_analyze) <= 0:
                         continue
                     self.dl_lstm2_mobiflow_idx = list(global_ue_mf.keys())[-1] # update the last analyzed mobiflow index
@@ -185,8 +186,9 @@ class MobiWatchXapp:
                         for i in range(len(labels)):
                             label = labels[i]
                             if label == True:
+                                abnormal_mf_index = int(list(ue_mf_to_analyze.keys())[i])
                                 # the ith index means sequence in range [i, i+sequence_length]
-                                if ue_mf_to_analyze[i].split(";")[8] != ue_mf_to_analyze[i + sequence_length - 1].split(";")[8]:
+                                if ue_mf_to_analyze[abnormal_mf_index].split(";")[8] != ue_mf_to_analyze[abnormal_mf_index + sequence_length - 1].split(";")[8]:
                                     rmr_xapp.logger.info(f"Skip sequence with different rnti")
                                     continue # only process sequences with the same rnti
 
@@ -194,7 +196,6 @@ class MobiWatchXapp:
                                 for j in range(i, i+sequence_length):
                                     sequence_idx_list.append(int(list(ue_mf_to_analyze.keys())[j]))
 
-                                abnormal_mf_index = int(list(ue_mf_to_analyze.keys())[i])
                                 # find mobiflow entry with index
                                 abnormal_mf = ue_mf_to_analyze[abnormal_mf_index].split(";")
                                 event_name = "Abnormal UE Sequence"
